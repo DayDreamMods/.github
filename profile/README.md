@@ -1,2 +1,2 @@
-## wwwDayDream-Modding
-A useful centralized location for easy distribution of (most) of my modding plugins or tools.
+## ModdingMess
+A collection of developers operating under an organization focused on CI/CD for longer-term maintainability.
