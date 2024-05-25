@@ -1,0 +1,13 @@
+name: Repo Policy
+
+on:
+  create:
+  delete:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  org-policy:
+    name: Organization Policy
+    uses: RedEyeMods/ReusableWorkflows/.github/workflows/centralized-policy.yml@main
