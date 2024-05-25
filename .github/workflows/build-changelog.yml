@@ -1,0 +1,59 @@
+name: Build Changelog
+
+on:
+  workflow_call:
+    inputs:
+      release:
+        description: 'Is Release State'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build_changelog:
+    name: Build CHANGELOG.md
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fetch Sources
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+
+      - name: Build Changelog
+        uses: mikepenz/release-changelog-builder-action@v4
+        with:
+          token: ${{ github.TOKEN }}
+          outputFile: "CHANGELOG.md"
+          includeOpen: ${{ !inputs.release }}
+          ignorePreReleases: true
+          configurationJson: |
+            {
+              "template": "# ${{ github.event.repository.name }} - ${{ github.ref_name }}\n\n#{{CHANGELOG}}\n\n### Misc\n---\n#{{UNCATEGORIZED}}\n\nFull Changelog: [#{{FROM_TAG}}...#{{TO_TAG}}](#{{RELEASE_DIFF}})",
+              "pr_template": "* #{{TITLE}} by [@#{{AUTHOR}}](https://github.com/#{{AUTHOR}}) in [##{{NUMBER}}](#{{URL}})",
+              "categories": [
+                {
+                    "title": "## Features",
+                    "labels": ["Feature"]
+                },
+                {
+                    "title": "## Fixes",
+                    "labels": ["Fix"]
+                },
+                {
+                    "title": "## Documentation",
+                    "labels": ["Documentation"]
+                },
+                {
+                    "title": "## Distribution",
+                    "labels": ["Distribution"]
+                }
+              ]
+            }
+
+      - name: Upload Changelog Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: changelog
+          path: CHANGELOG.md
