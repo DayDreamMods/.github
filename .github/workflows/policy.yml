@@ -10,4 +10,4 @@ on:
 jobs:
   org-policy:
     name: Organization Policy
-    uses: RedEyeMods/github-workflows/.github/workflows/centralized-policy.yml@main
+    uses: RedEyeMods/ReusableWorkflows/.github/workflows/centralized-policy.yml@main
