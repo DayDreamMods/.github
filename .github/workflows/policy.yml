@@ -3,8 +3,7 @@ name: Repo Policy
 on:
   create:
   delete:
-  pull_request_target:
-    types: [opened]
+  pull_request:
     branches:
       - main
 
