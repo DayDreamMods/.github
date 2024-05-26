@@ -1,7 +1,8 @@
 name: Auto Label Pull Requests
 
 on:
-  pull_request:
+  pull_request_target:
+    types: [opened]
     branches:
       - main
 
@@ -22,7 +23,7 @@ jobs:
             labels="Documentation"
           elif [[ "$branch_name" == feature/* ]]; then
             labels="Feature"
-          elif [[ "$branch_name" == fix/* ]]; then
+          elif [[ "$branch_name" == chore/* ]] | [[ "$branch_name" == fix/* ]] | [[ "$branch_name" == refactor/* ]]; then
             labels="Fix"
           fi
 
