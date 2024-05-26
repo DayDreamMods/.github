@@ -1,0 +1,34 @@
+name: Auto Label Pull Requests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  auto-label:
+    - name: Check out the PR branch
+      uses: actions/checkout@v4
+
+    - name: Add labels based on branch name
+      id: add-labels
+      run: |
+        branch_name="${{ github.event.pull_request.head.ref }}"
+        labels=""
+
+        if [[ "$branch_name" == docs/* ]]; then
+          labels="Documentation"
+        elif [[ "$branch_name" == feature/* ]]; then
+          labels="Feature"
+        elif [[ "$branch_name" == fix/* ]]; then
+          labels="Fix"
+        fi
+
+        echo "labels=$labels" >> $GITHUB_ENV
+
+    - name: Apply labels
+      if: env.labels != ''
+      uses: actions-ecosystem/action-add-labels@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        labels: ${{ env.labels }}
