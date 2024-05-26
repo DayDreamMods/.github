@@ -1,4 +1,0 @@
-[submodule ".github/policy"]
-	path = .github
-	url = https://github.com/RedEyeMods/.github
-	branch = feature/submodule/policy
