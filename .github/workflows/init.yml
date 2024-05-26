@@ -6,6 +6,6 @@ on:
 jobs:
   run-init:
     name: Initial Repository Setup
-    uses: RedEyeMods/.github/workflows/init.yml@feature/reusable-workflows
+    uses: RedEyeMods/.github/.github/workflows/init.yml@feature/reusable-workflows
     secrets:
       org_pat: ${{ secrets.ORG_PAT }}
