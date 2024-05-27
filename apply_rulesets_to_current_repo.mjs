@@ -39,12 +39,26 @@ async function getFullRuleset(url, token) {
 
 // Function to apply rulesets to the current repository
 async function applyRulesets(rulesets, owner, repo, token) {
+  // Get existing rulesets for the target repository
+  const existingRulesets = await getRepoRulesets(owner, repo);
+  const existingNames = existingRulesets.map(rs => rs.name);
+
   for (const ruleset of rulesets) {
     const fullRuleset = await getFullRuleset(ruleset._links.self.href, token);
+    const isOn = fullRuleset.name.includes("[ONN]");
+    if (!isOn && !fullRuleset.name.includes("[OFF]")) continue;
+    const newName = fullRuleset.name.replace("[OFF]", "[ONN]").replace("[ONN]", "[WF]");
+    
+    // Check if a ruleset with the same name already exists
+    if (existingNames.includes(newName)) {
+      console.log(`Ruleset with name ${newName} already exists in ${owner}/${repo}, skipping.`);
+      continue;
+    }
+
     const data = {
-      name: "[WF] " + fullRuleset.name,
+      name: newName,
       rules: fullRuleset.rules,
-      enforcement: fullRuleset.enforcement == 'active' ? 'disabled' : 'active', // Set enforcement to opposite for special enforcement scenarios.
+      enforcement: isOn ? 'active' : 'disabled',
       conditions: fullRuleset.conditions, // Copy the conditions/targets
       bypass_actors: fullRuleset.bypass_actors // Copy bypass actors if any
     };
