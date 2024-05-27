@@ -18,6 +18,6 @@ jobs:
     steps:
       - name: Disable Workflow
         run: |
-          gh workflow disable -R $GITHUB_REPOSITORY "${{ github.workflow }}"
+          gh workflow disable -R $GITHUB_REPOSITORY "./${{ github.workflow }}"
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
