@@ -1,8 +1,6 @@
-# Default Global Owner
-* @RedEyeMods
-
-# You should really add yourself here
-
+# Code Owners - Append new owners here
+* @RedEyeMods/Founders 
 
 # This should stay
 .github/ @RedEyeMods
+LICENSE @RedEyeMods
