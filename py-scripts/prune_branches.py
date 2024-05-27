@@ -25,7 +25,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     base_directory = "."  # Replace with your base directory path if different
-    remote_name = "origin"  # Change this if your remote has a different name
 
     fetch_prune(base_directory)
 
