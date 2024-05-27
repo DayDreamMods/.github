@@ -5,6 +5,9 @@ def run_command(command, cwd=None):
     output, error = process.communicate()
     return output.decode().strip(), error.decode().strip()
 
+def track_branch(directory, branch, remote_branch):
+    return run_command(f"git branch --track {branch} {remote_branch}", cwd=directory)
+
 def fetch_prune(directory):
     return run_command("git fetch --prune", cwd=directory)
 
