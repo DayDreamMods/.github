@@ -1,13 +1,5 @@
-<<<<<<< HEAD
-# Default Global Owner
-* @RedEyeMods
-
-# You should really add yourself here
-* @wwwDayDream
-=======
 # Code Owners - Append new owners here
 * @RedEyeMods/Founders 
->>>>>>> origin/feature/mergeable/code-owners
 
 # This should stay
 .github/ @RedEyeMods
