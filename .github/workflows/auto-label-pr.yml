@@ -23,7 +23,7 @@ jobs:
             labels="Documentation"
           elif [[ "$branch_name" == feature/* ]]; then
             labels="Feature"
-          elif [[ "$branch_name" == chore/* ]] || [[ "$branch_name" == fix/* ]] || [[ "$branch_name" == refactor/* ]]; then
+          elif [[ "$branch_name" == chore/* || "$branch_name" == fix/* || "$branch_name" == refactor/* ]]; then
             labels="Fix"
           fi
 
