@@ -31,7 +31,7 @@ jobs:
     name: Apply Rulesets
     needs: ascertain-repo-details
     if: "!contains(needs.ascertain-repo-details.outputs.repo_topics, 'dev')"
-    uses: RedEyeMods/.github/workflows/import-rulesets.yml@feature/reusable-workflows
+    uses: RedEyeMods/.github/.github/workflows/import-rulesets.yml@feature/reusable-workflows
     with:
       source-repo: RedEyeMods/.github
     secrets:
@@ -41,7 +41,7 @@ jobs:
     name: Dotnet Project Initialization
     needs: ascertain-repo-details
     if: contains(needs.ascertain-repo-details.outputs.repo_topics, 'bepinex')
-    uses: RedEyeMods/.github/workflows/dotnet-new.yml@feature/reusable-workflows
+    uses: RedEyeMods/.github/.github/workflows/dotnet-new.yml@feature/reusable-workflows
     secrets:
       org_pat: ${{ secrets.org_pat }}
     with:
