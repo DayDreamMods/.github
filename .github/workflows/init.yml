@@ -1,0 +1,23 @@
+name: Repository Setup
+
+on: 
+  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  run-init:
+    name: Initial Repository Setup
+    uses: RedEyeMods/.github/.github/workflows/init.yml@feature/reusable-workflows
+    secrets:
+      org_pat: ${{ secrets.ORG_PAT }}
+  one-time:
+    name: Execute One Time
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disable Workflow
+        run: |
+          gh workflow disable -R $GITHUB_REPOSITORY "${{ github.workflow }}"
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
