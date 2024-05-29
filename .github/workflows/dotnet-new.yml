@@ -57,6 +57,8 @@ jobs:
           title: "Automated project creation"
           body: "Added 'Common' submodule and implemented new SLN & CSPROJ"
           branch: feature/dotnet/sln-project
+          committer: "RedEyeMods[bot] <RedEyeMods[bot]@users.noreply.github.com>"
+          author: "RedEyeMods[bot] <RedEyeMods[bot]@users.noreply.github.com>"
 
       # This is where we need to do hot stuff, like utilizing our uncreated templates :D
       - name: Echo Content
