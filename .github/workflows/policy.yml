@@ -1,0 +1,26 @@
+name: Organization Policy
+
+on:
+  workflow_call:
+    inputs:
+      regex:
+        description: "The regex for checking branch names, probably don't change this"
+        required: false
+        default: '(?:(?:(?:chore){1}|(?:docs){1}|(?:fix){1}|(?:refactor){1}|(?:feature){1}|(?:wip){1})(\/[a-z\d-]+)+|(main))$'
+        type: string
+
+jobs:
+  branch-naming-policy:
+    name: Branch Name
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Branch Naming Policy Action
+        uses: nicklegan/github-repo-branch-naming-policy-action@v1.1.1
+        if: github.ref_type == 'branch' || github.ref_type == 'pull_request'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          regex: ${{ inputs.regex }}

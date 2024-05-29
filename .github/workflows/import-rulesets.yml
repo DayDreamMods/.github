@@ -1,0 +1,40 @@
+name: Import Rulesets
+
+on:
+  workflow_call:
+    inputs:
+      source-repo:
+        description: 'Repository to pull rulesets from'
+        required: true
+        type: string
+    secrets:
+      org_pat:
+        description: 'Organization PAT'
+        required: true
+
+jobs:
+  apply-rulesets:
+    name: Copy rulesets from source repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout workflows repository
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ inputs.source-repo }}
+          ref: main  # or the branch/tag you want to checkout
+          token: ${{ secrets.org_pat }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install @octokit/core node-fetch
+
+      - name: Run apply rulesets script
+        env:
+          GITHUB_TOKEN: ${{ secrets.org_pat }}
+          TARGET_REPO: ${{ inputs.source-repo }}
+        run: node apply_rulesets_to_current_repo.mjs

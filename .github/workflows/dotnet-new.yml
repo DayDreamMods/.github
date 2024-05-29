@@ -1,0 +1,40 @@
+name: Create New Dotnet Project
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      repo_title:
+        description: 'Repository Title'
+        required: false
+        type: string
+      repo_description:
+        description: 'Repository Description'
+        required: false
+        type: string
+      repo_topics:
+        description: 'Repository Topics'
+        required: false
+        type: string
+    secrets:
+      org_pat:
+        description: 'Organization PAT'
+        required: true
+jobs:
+  setup-dotnet:
+    name: Install Dotnet
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Setup .NET Env
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.203"
+      # This is where we need to do hot stuff, like utilizing our uncreated templates :D
+      - name: Echo Content
+        run: |
+          echo ${{ inputs.repo_title }}
+          echo ${{ inputs.repo_description }}
+          echo ${{ inputs.repo_topics }}
