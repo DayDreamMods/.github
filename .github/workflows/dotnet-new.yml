@@ -29,11 +29,11 @@ jobs:
         with:
           dotnet-version: "8.0.x"
           
-      - name: Add submodule common libs
+      - name: Configure user who commits
         run: |
           git config --global user.name "RedEyeMods[bot]"
           git config --global user.email "RedEyeMods[bot]@users.noreply.github.com"
-          
+                    
       - name: Add submodule common libs
         run: |
           git submodule add https://github.com/RedEyeMods/Common
