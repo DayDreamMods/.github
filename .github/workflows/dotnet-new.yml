@@ -53,7 +53,7 @@ jobs:
       - name: Checkout new branch
         run: |
           git checkout -b feature/dotnet/sln-project
-          git push
+          git push --set-upstream origin feature/dotnet/sln-project
           
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
