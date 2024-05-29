@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{ inputs.source-repo }}
-          ref: main  # or the branch/tag you want to checkout
+          ref: feature/reusable-workflows  # or the branch/tag you want to checkout
           token: ${{ secrets.org_pat }}
 
       - name: Set up Node.js
