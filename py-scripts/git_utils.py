@@ -30,7 +30,7 @@ def get_remote_branches(directory, remote="origin"):
     return [branch.strip('\'').replace(f"{remote}/", '') for branch in branches.splitlines() if branch.strip('\'').startswith(f"{remote}/")]
 
 def delete_branch(directory, branch):
-    return run_command(f"git branch -d {branch}", cwd=directory)
+    return run_command(f"git branch -D {branch}", cwd=directory)
 
 def checkout_branch(directory, branch):
     return run_command(f"git checkout {branch}", cwd=directory)
