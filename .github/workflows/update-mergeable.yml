@@ -15,7 +15,7 @@ on:
       target-repo:
         type: string
         description: The repository to merge into.
-        default: ${{ github.repository }}
+        default: "Current"
         required: false
       target-branch:
         type: string
@@ -34,11 +34,21 @@ jobs:
     name: Merge Changes
     runs-on: ubuntu-latest
     steps:
+      - name: Determine Target repo
+        run: |
+          if [ "${{ inputs.target-repo }}" = "Current" ]; then
+            echo "Setting target repo to ${{ github.repository }}"
+            echo "target-repo=${{ github.repository }}" >> $GITHUB_ENV
+          else
+            echo "Setting target repo to ${{ inputs.target-repo }}"
+            echo "target-repo=${{ inputs.target-repo }}" >> $GITHUB_ENV
+          fi
+        
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.target-branch }}
-          repository: ${{ inputs.target-repo }}
+          repository: ${{ env.target-repo }}
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
