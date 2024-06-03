@@ -42,10 +42,16 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
 
-      - name: Merge remote branch
+      - name: Fetch New Remote
+        id: diff
         run: |
           git remote add mergeable https://github.com/${{ inputs.source-repo }}.git
-          git fetch mergeable
+          git fetch mergeable ${{ inputs.source-branch }}
+          git diff --quiet HEAD mergeable/${{ github.event.inputs.source-branch }}
+
+      - name: Merge Results
+        if: steps.diff.outcome == 'failure'
+        run: |
           if [ "${{ inputs.force-merge }}" = "true" ]; then
             git merge -X theirs --allow-unrelated-histories mergeable/${{ inputs.source-branch }}
           else
@@ -53,6 +59,7 @@ jobs:
           fi
 
       - name: Create Pull Request
+        if: steps.diff.outcome == 'failure'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.ORG_PAT }}
