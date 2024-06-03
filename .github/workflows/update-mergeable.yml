@@ -50,7 +50,7 @@ jobs:
       - name: Simulate merge
         id: simulate-merge
         run: |
-          git merge --no-commit --no-ff auto-merge/${{ github.event.inputs.source-branch }} || echo "Merge conflicts detected"
+          git merge --no-commit --no-ff --allow-unrelated-histories auto-merge/${{ github.event.inputs.source-branch }} || echo "Merge conflicts detected"
           if [ "$(git diff --name-only HEAD)" != "" ]; then
             echo "Merge would result in changes."
             echo "merge_needed=true" >> $GITHUB_ENV
