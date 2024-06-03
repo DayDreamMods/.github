@@ -44,6 +44,7 @@ jobs:
 
       - name: Fetch New Remote
         id: diff
+        continue-on-error: true
         run: |
           git remote add mergeable https://github.com/${{ inputs.source-repo }}.git
           git fetch mergeable ${{ inputs.source-branch }}
