@@ -1,0 +1,103 @@
+name: Git Mergeable Merge-Into-Me
+
+on:
+  workflow_call:
+    inputs:
+      mergeable-id:
+        description: Mergeable branch @ repo short url -> Destination branch.
+        required: true
+        default: feature/mergeable/...@RedEyeMods/.github->main
+        type: string
+      target-branch:
+        type: string
+        description: The branch to merge into.
+        default: main
+        required: false
+    secrets:
+      GPG_PRIVATE_KEY:
+        description: 'Private GPG key for commit signing'
+        required: true
+      GPG_SIGNING_PASSPHRASE:
+        description: 'The passphrase for the GPG_PRIVATE_KEY'
+        required: true
+      PR_PAT:
+        description: 'The personal access token for the PR user'
+        required: true
+
+jobs:
+  translate-input:
+    name: Translate Input
+    runs-on: ubuntu-latest
+    outputs:
+      branch-name: ${{ steps.translate.outputs.branch-name }}
+      repo-short-url: ${{ steps.translate.outputs.repo-short-url }}
+    steps:
+      - name: Translate branch and repo input
+        id: translate
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const input = "${{ inputs.mergeable-id }}";
+            const match = input.match(/([\w-\/]+)@([^/]+)\/(.+)->(.+)/);
+            if (match) {
+              const branchName = match[1];
+              const repoShortUrl = `${match[2]}/${match[3]}`;
+              const intoBranch = match[4];
+              core.setOutput('source-branch', branchName);
+              core.setOutput('source-repo', repoShortUrl);
+              core.setOutput('target-branch', intoBranch);
+            } else {
+              throw new Error('Invalid input format. Expected format: branch/name@owner/repo');
+            }
+            
+  merge-and-pr:
+    name: Merge Changes
+    needs: translate-input
+    runs-on: ubuntu-latest
+    steps:        
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.translate-inputs.outputs.target-branch }}
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          
+      - name: Add New Remote
+        run: |
+          git remote add auto-merge https://github.com/${{ needs.translate-inputs.outputs.source-repo }}.git
+          git fetch auto-merge ${{ needs.translate-inputs.outputs.source-branch }}
+
+      - name: Simulate merge
+        id: simulate-merge
+        run: |
+          git merge --no-commit --no-ff --allow-unrelated-histories auto-merge/${{ needs.translate-inputs.outputs.source-branch }} || echo "Merge conflicts detected"
+          if [ "$(git diff --name-only HEAD)" != "" ]; then
+            echo "Merge would result in changes."
+            echo "merge_needed=true" >> $GITHUB_ENV
+          else
+            echo "Merge would not result in any changes."
+            echo "merge_needed=false" >> $GITHUB_ENV
+          fi
+          git merge --abort
+          
+      - name: Merge Results
+        if: env.merge_needed == 'true'
+        id: merge
+        run: |
+          git merge -X theirs --allow-unrelated-histories auto-merge/${{ needs.translate-inputs.outputs.source-branch }}
+
+      - name: Create Pull Request
+        if: steps.merge.outcome == 'success'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.PR_PAT }}
+          title: "Update ${{ needs.translate-inputs.outputs.source-repo }}/${{ needs.translate-inputs.outputs.source-branch }}"
+          body: ""
+          branch: chore/mergeables/update
+          author: "RedEyeMods <redeyemodding@gmail.com>"
