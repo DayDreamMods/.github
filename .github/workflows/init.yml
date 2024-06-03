@@ -32,13 +32,3 @@ jobs:
       source-repo: RedEyeMods/.github
     secrets:
       org_pat: ${{ secrets.org_pat }}
-
-  setup-repo-state:
-    name: Dotnet Project Initialization
-    needs: ascertain-repo-details
-    uses: RedEyeMods/.github/.github/workflows/dotnet-new.yml@feature/reusable-workflows
-    secrets:
-      org_pat: ${{ secrets.org_pat }}
-    with:
-      repo_title: ${{ needs.ascertain-repo-details.outputs.repo_title }}
-      repo_description: ${{ needs.ascertain-repo-details.outputs.repo_description }}
