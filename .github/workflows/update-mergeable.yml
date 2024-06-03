@@ -12,6 +12,11 @@ on:
         type: string
         description: Branch on the repository to merge from.
         required: true
+      target-repo:
+        type: string
+        description: The repository to merge into.
+        default: ${{ github.repository }}
+        required: false
       target-branch:
         type: string
         description: The branch to merge into.
@@ -33,6 +38,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.target-branch }}
+          repository: ${{ inputs.target-repo }}
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
