@@ -47,10 +47,10 @@ jobs:
         run: |
           git remote add mergeable https://github.com/${{ inputs.source-repo }}.git
           git fetch mergeable ${{ inputs.source-branch }}
-          git diff --quiet HEAD mergeable/${{ github.event.inputs.source-branch }} || echo "merge_required=true" >> $GITHUB_ENV
+          git diff --quiet HEAD mergeable/${{ github.event.inputs.source-branch }}
 
       - name: Merge Results
-        if: env.merge_required == 'true'
+        if: steps.diff.outcome == 'failure'
         run: |
           if [ "${{ inputs.force-merge }}" = "true" ]; then
             git merge -X theirs --allow-unrelated-histories mergeable/${{ inputs.source-branch }}
@@ -59,7 +59,7 @@ jobs:
           fi
 
       - name: Create Pull Request
-        if: env.merge_required == 'true'
+        if: steps.diff.outcome == 'failure'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.ORG_PAT }}
