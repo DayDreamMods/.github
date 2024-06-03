@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.target-branch }}
-          repository: ${{ inputs.target-repo }}
+          repository: ${{ env.target-repo }}
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
