@@ -33,5 +33,5 @@ jobs:
         if: env.labels != ''
         uses: actions-ecosystem/action-add-labels@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.ORG_PAT }}
           labels: ${{ env.labels }}
