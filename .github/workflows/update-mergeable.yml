@@ -41,26 +41,37 @@ jobs:
           passphrase: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-
-      - name: Fetch New Remote
-        id: diff
-        continue-on-error: true
+          
+      - name: Add New Remote
         run: |
-          git remote add mergeable https://github.com/${{ inputs.source-repo }}.git
-          git fetch mergeable ${{ inputs.source-branch }}
-          git diff --quiet HEAD mergeable/${{ github.event.inputs.source-branch }}
+          git remote add auto-merge https://github.com/${{ inputs.source-repo }}.git
+          git fetch auto-merge ${{ inputs.source-branch }}
 
+      - name: Simulate merge
+        id: simulate-merge
+        run: |
+          git merge --no-commit --no-ff auto-merge/${{ github.event.inputs.source-branch }} || echo "Merge conflicts detected"
+          if [ "$(git diff --name-only HEAD)" != "" ]; then
+            echo "Merge would result in changes."
+            echo "merge_needed=true" >> $GITHUB_ENV
+          else
+            echo "Merge would not result in any changes."
+            echo "merge_needed=false" >> $GITHUB_ENV
+          fi
+          git merge --abort
+          
       - name: Merge Results
-        if: steps.diff.outcome == 'failure'
+        if: env.merge_needed == 'true'
+        id: merge
         run: |
           if [ "${{ inputs.force-merge }}" = "true" ]; then
-            git merge -X theirs --allow-unrelated-histories mergeable/${{ inputs.source-branch }}
+            git merge -X theirs --allow-unrelated-histories auto-merge/${{ inputs.source-branch }}
           else
-            git merge -X theirs mergeable/${{ inputs.source-branch }}
+            git merge -X theirs auto-merge/${{ inputs.source-branch }}
           fi
 
       - name: Create Pull Request
-        if: steps.diff.outcome == 'failure'
+        if: steps.merge.outcome == 'success'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.ORG_PAT }}
