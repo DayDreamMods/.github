@@ -47,9 +47,9 @@ jobs:
           git remote add mergeable https://github.com/${{ inputs.source-repo }}.git
           git fetch mergeable
           if [ "${{ inputs.force-merge }}" = "true" ]; then
-            git merge -X theirs --allow-unrelated-histories origin/${{ inputs.source-branch }}
+            git merge -X theirs --allow-unrelated-histories mergeable/${{ inputs.source-branch }}
           else
-            git merge -X theirs origin/${{ inputs.source-branch }}
+            git merge -X theirs mergeable/${{ inputs.source-branch }}
           fi
 
       - name: Create Pull Request
