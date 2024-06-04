@@ -80,6 +80,7 @@ jobs:
             }
 
             // Ensure the entry exists
+            core.setOutput('committed', !fileContent.includes(entry));
             if (!fileContent.includes(entry)) {
               // Add the entry to the file content
               fileContent += `${entry}\n`;
@@ -116,7 +117,7 @@ jobs:
           git merge -X theirs --allow-unrelated-histories auto-merge/${{ steps.input-sanitation.outputs.source-branch }}
 
       - name: Create Pull Request
-        if: steps.merge.outcome == 'success'
+        if: steps.merge.outcome == 'success' || steps.ensure-mergeables.outputs.committed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PR_PAT }}
