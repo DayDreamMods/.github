@@ -30,8 +30,9 @@ on:
         
 
 jobs:
-  send-to-reusable:
-    uses: RedEyeMods/.github/.github/workflows/git-mergeable-merge-into.yml@feature/reusable-workflows
+  install-desired:
+    name: Install Mergeable
+    uses: RedEyeMods/.github/.github/workflows/gh-mergeable-install.yml@feature/reusable-workflows
     secrets:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_SIGNING_PASSPHRASE: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
