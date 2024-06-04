@@ -23,13 +23,93 @@ on:
         default: main
         required: false
 jobs:
-  install-desired:
-    name: Install Mergeable
-    uses: RedEyeMods/.github/.github/workflows/gh-mergeable-install.yml@feature/reusable-workflows
-    secrets:
-      GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-      GPG_SIGNING_PASSPHRASE: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
-      PR_PAT: ${{ secrets.ORG_PAT }}
-    with:
+  merge-and-pr:
+    name: Merge & PR
+    runs-on: ubuntu-latest
+    env:
       mergeable-id: ${{ inputs.source-branch }}@${{ inputs.source-repo }}->${{ inputs.target-branch }}
-      target-repo: ${{ inputs.target-repo }}
+    steps:
+      - name: Input Sanitation
+        id: input-sanitation
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setOutput('target-repo', '${{ inputs.target-repo }}' == '~' ? '${{ github.repository }}' : '${{ inputs.target-repo }}');
+                      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target-branch }}
+          repository: ${{ steps.input-sanitation.outputs.target-repo }}
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          
+      - name: Add New Remote
+        run: |
+          git remote add auto-merge https://github.com/${{ inputs.source-repo }}.git
+          git fetch auto-merge ${{ inputs.source-branch }}
+
+      - name: Ensure .gitmergeables entry
+        id: ensure-mergeables
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const entry = '${{ env.mergeable-id }}';
+            const filePath = '.github/.mergeables';
+            const fs = require('fs');
+            const path = require('path');
+
+            // Check if the file exists and read its content if it does
+            let fileContent = '';
+            if (fs.existsSync(filePath)) {
+              fileContent = fs.readFileSync(filePath, 'utf8');
+            }
+
+            if (!fileContent.includes(entry)) {
+              // Add the entry to the file content
+              fileContent += `${entry}\n`;
+              
+              // Write the updated content back to the file
+              fs.writeFileSync(filePath, fileContent, 'utf8');
+
+              // Stage the changes, commit, and push
+              const execSync = require('child_process').execSync;
+              execSync('git add ' + filePath);
+              execSync(`git commit -m "Add .github/.mergeables entry: ${entry}"`);
+            } else {
+              console.log('Entry already exists in .mergeables');
+            }
+          result-encoding: json
+                    
+      - name: Merge Results
+        if: env.merge_needed == 'true'
+        id: merge
+        run: |
+          git merge -X theirs --allow-unrelated-histories auto-merge/${{ steps.input-sanitation.outputs.source-branch }}
+
+      - name: PR Check
+        id: pr-check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const currentSymRef = exec.exec('git symbolic-ref -q HEAD');
+            const currentBranch = exec.exec('git rev-parse --abbrev-ref HEAD');
+            const trackingBracnh = exec.exec(`git for-each-ref --format='%(upstream:short)' "${currentSymRef}"`);
+            const diff = exec.exec(`git diff ${currentBranch} ${trackingBranch}`);
+            core.setOutput('pr-needed', diff != "" ? 'true' : 'false');
+
+      - name: Create Pull Request
+        if: steps.pr-check.outputs.pr-neede == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.ORG_PAT }}
+          title: "Update ${{ steps.input-sanitation.outputs.source-repo }}/${{ steps.input-sanitation.outputs.source-branch }}"
+          body: ""
+          branch: chore/mergeables/update/${{ steps.input-sanitation.outputs.source-branch }}
+          author: "RedEyeMods <redeyemodding@gmail.com>"
