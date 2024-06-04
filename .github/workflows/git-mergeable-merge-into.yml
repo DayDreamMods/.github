@@ -24,53 +24,31 @@ on:
         description: 'The personal access token for the PR user'
         required: true
 
-jobs:
-  translate-input:
-    name: Translate Input
+jobs:   
+  merge-and-pr:
+    name: Check & Merge Changes
     runs-on: ubuntu-latest
-    outputs:
-      source-branch: ${{ steps.translate.outputs.source-branch }}
-      source-repo: ${{ steps.translate.outputs.source-repo }}
-      target-branch: ${{ steps.translate.outputs.target-branch }}
     steps:
-      - name: Translate branch and repo input
-        id: translate
+      - name: Input Sanitation
+        id: input-sanitation
         uses: actions/github-script@v7
         with:
           script: |
             const input = "${{ inputs.mergeable-id }}";
             const match = input.match(/([\w-\/]+)@([^/]+)\/(.+)->(.+)/);
-            if (match) {
-              const branchName = match[1];
-              const repoShortUrl = `${match[2]}/${match[3]}`;
-              const intoBranch = match[4];
-              core.setOutput('source-branch', branchName);
-              core.setOutput('source-repo', repoShortUrl);
-              core.setOutput('target-branch', intoBranch);
-            } else {
-              throw new Error('Invalid input format. Expected format: branch/name@owner/repo');
-            }
-   
-  merge-and-pr:
-    name: Merge Changes
-    needs: translate-input
-    runs-on: ubuntu-latest
-    steps:       
-      - name: Determine checkout target
-        run: |
-          if [ "${{ inputs.target-repo }}" == "~" ]; then
-            echo "Target repo is ${{ github.repository }}."
-            echo "target-repo=${{ github.repository }}" >> $GITHUB_ENV
-          else
-            echo "Target repo is ${{ inputs.target-repo }}"
-            echo "target-repo=${{ inputs.target-repo }}" >> $GITHUB_ENV
-          fi
-          
+            if (!match)
+              throw new Error('Invalid input format. Expected format: branch/name@owner/repo->target-branch');
+
+            core.setOutput('source-branch', match[1]);
+            core.setOutput('source-repo', `${match[2]}/${match[3]}`);
+            core.setOutput('target-branch', match[4]);
+            core.setOutput('target-repo', '${{ inputs.target-repo }}' == '~' ? '${{ github.repository }}' : '${{ inputs.target-repo }}');
+                      
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ needs.translate-inputs.outputs.target-branch }}
-          repository: ${{ env.target-repo }}
+          ref: ${{ steps.input-sanitation.outputs.target-branch }}
+          repository: ${{ steps.input-sanitation.outputs.target-repo }}
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
@@ -82,13 +60,13 @@ jobs:
           
       - name: Add New Remote
         run: |
-          git remote add auto-merge https://github.com/${{ needs.translate-inputs.outputs.source-repo }}.git
-          git fetch auto-merge ${{ needs.translate-inputs.outputs.source-branch }}
+          git remote add auto-merge https://github.com/${{ steps.input-sanitation.outputs.source-repo }}.git
+          git fetch auto-merge ${{ steps.input-sanitation.outputs.source-branch }}
 
       - name: Simulate merge
         id: simulate-merge
         run: |
-          git merge --no-commit --no-ff --allow-unrelated-histories auto-merge/${{ needs.translate-inputs.outputs.source-branch }} || echo "Merge conflicts detected"
+          git merge --no-commit --no-ff --allow-unrelated-histories auto-merge/${{ steps.input-sanitation.outputs.source-branch }} || echo "Merge conflicts detected"
           if [ "$(git diff --name-only HEAD)" != "" ]; then
             echo "Merge would result in changes."
             echo "merge_needed=true" >> $GITHUB_ENV
@@ -102,7 +80,7 @@ jobs:
         if: env.merge_needed == 'true'
         id: merge
         run: |
-          git merge -X theirs --allow-unrelated-histories auto-merge/${{ needs.translate-inputs.outputs.source-branch }}
+          git merge -X theirs --allow-unrelated-histories auto-merge/${{ steps.input-sanitation.outputs.source-branch }}
 
       - name: Ensure .gitmergeables entry
         if: env.merge_needed == 'true'
@@ -111,7 +89,7 @@ jobs:
         with:
           script: |
             const entry = '${{ inputs.mergeable-id }}';
-            const filePath = '.gitmergeables';
+            const filePath = '.github/.mergeables';
             const fs = require('fs');
             const path = require('path');
 
@@ -132,9 +110,9 @@ jobs:
               // Stage the changes, commit, and push
               const execSync = require('child_process').execSync;
               execSync('git add ' + filePath);
-              execSync(`git commit -m "Add .gitmergeables entry: ${entry}"`);
+              execSync(`git commit -m "Add .github/.mergeables entry: ${entry}"`);
             } else {
-              console.log('Entry already exists in .gitmergeables');
+              console.log('Entry already exists in .mergeables');
             }
           result-encoding: json
 
@@ -143,7 +121,7 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PR_PAT }}
-          title: "Update ${{ needs.translate-inputs.outputs.source-repo }}/${{ needs.translate-inputs.outputs.source-branch }}"
+          title: "Update ${{ steps.input-sanitation.outputs.source-repo }}/${{ steps.input-sanitation.outputs.source-branch }}"
           body: ""
-          branch: chore/mergeables/update/${{ needs.translate-inputs.outputs.source-branch }}
+          branch: chore/mergeables/update/${{ steps.input-sanitation.outputs.source-branch }}
           author: "RedEyeMods <redeyemodding@gmail.com>"
