@@ -98,10 +98,11 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const currentSymRef = exec.exec('git symbolic-ref -q HEAD');
-            const currentBranch = exec.exec('git rev-parse --abbrev-ref HEAD');
-            const trackingBranch = exec.exec(`git for-each-ref --format='%(upstream:short)' "${currentSymRef}"`);
-            const diff = exec.exec(`git diff ${currentBranch} ${trackingBranch}`);
+            const execSync = require('child_process').execSync;
+            const currentSymRef = execSync('git symbolic-ref -q HEAD');
+            const currentBranch = execSync('git rev-parse --abbrev-ref HEAD');
+            const trackingBranch = execSync(`git for-each-ref --format='%(upstream:short)' "${currentSymRef}"`);
+            const diff = execSync(`git diff ${currentBranch} ${trackingBranch}`);
             core.setOutput('pr-needed', diff != "" ? 'true' : 'false');
 
       - name: Create Pull Request
