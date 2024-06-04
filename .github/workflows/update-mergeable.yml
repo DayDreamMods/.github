@@ -22,13 +22,6 @@ on:
         description: The branch to merge into.
         default: main
         required: false
-      force-merge:
-        type: boolean
-        description: Whether we force with allow-unrelated-histories.
-        default: false
-        required: false
-        
-
 jobs:
   install-desired:
     name: Install Mergeable
