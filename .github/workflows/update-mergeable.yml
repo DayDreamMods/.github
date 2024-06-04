@@ -15,7 +15,7 @@ on:
       target-repo:
         type: string
         description: The repository to merge into.
-        default: "Current"
+        default: "~"
         required: false
       target-branch:
         type: string
@@ -30,68 +30,12 @@ on:
         
 
 jobs:
-  merge-and-pr:
-    name: Merge Changes
-    runs-on: ubuntu-latest
-    steps:
-      - name: Determine Target repo
-        run: |
-          if [ "${{ inputs.target-repo }}" = "Current" ]; then
-            echo "Setting target repo to ${{ github.repository }}"
-            echo "target-repo=${{ github.repository }}" >> $GITHUB_ENV
-          else
-            echo "Setting target repo to ${{ inputs.target-repo }}"
-            echo "target-repo=${{ inputs.target-repo }}" >> $GITHUB_ENV
-          fi
-        
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.target-branch }}
-          repository: ${{ env.target-repo }}
-
-      - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
-          git_user_signingkey: true
-          git_commit_gpgsign: true
-          
-      - name: Add New Remote
-        run: |
-          git remote add auto-merge https://github.com/${{ inputs.source-repo }}.git
-          git fetch auto-merge ${{ inputs.source-branch }}
-
-      - name: Simulate merge
-        id: simulate-merge
-        run: |
-          git merge --no-commit --no-ff --allow-unrelated-histories auto-merge/${{ github.event.inputs.source-branch }} || echo "Merge conflicts detected"
-          if [ "$(git diff --name-only HEAD)" != "" ]; then
-            echo "Merge would result in changes."
-            echo "merge_needed=true" >> $GITHUB_ENV
-          else
-            echo "Merge would not result in any changes."
-            echo "merge_needed=false" >> $GITHUB_ENV
-          fi
-          git merge --abort
-          
-      - name: Merge Results
-        if: env.merge_needed == 'true'
-        id: merge
-        run: |
-          if [ "${{ inputs.force-merge }}" = "true" ]; then
-            git merge -X theirs --allow-unrelated-histories auto-merge/${{ inputs.source-branch }}
-          else
-            git merge -X theirs auto-merge/${{ inputs.source-branch }}
-          fi
-
-      - name: Create Pull Request
-        if: steps.merge.outcome == 'success'
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.ORG_PAT }}
-          title: "Update ${{ inputs.source-repo }}/${{ inputs.source-branch }}"
-          body: ""
-          branch: chore/mergeables/update
-          author: "RedEyeMods <redeyemodding@gmail.com>"
+  send-to-reusable:
+    uses: RedEyeMods/.github/.github/workflows/git-mergeable-merge-into.yml@feature/reusable-workflows
+    secrets:
+      GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      GPG_SIGNING_PASSPHRASE: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
+      PR_PAT: ${{ secrets.ORG_PAT }}
+    with:
+      mergeable-id: ${{ inputs.source-branch }}@${{ inputs.source-repo }}->${{ inputs.target-branch }}
+      target-repo: ${{ inputs.target-repo }}
