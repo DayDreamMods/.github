@@ -100,7 +100,7 @@ jobs:
           script: |
             const currentSymRef = exec.exec('git symbolic-ref -q HEAD');
             const currentBranch = exec.exec('git rev-parse --abbrev-ref HEAD');
-            const trackingBracnh = exec.exec(`git for-each-ref --format='%(upstream:short)' "${currentSymRef}"`);
+            const trackingBranch = exec.exec(`git for-each-ref --format='%(upstream:short)' "${currentSymRef}"`);
             const diff = exec.exec(`git diff ${currentBranch} ${trackingBranch}`);
             core.setOutput('pr-needed', diff != "" ? 'true' : 'false');
 
