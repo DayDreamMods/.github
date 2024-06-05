@@ -63,6 +63,7 @@ jobs:
   update-matrix:
     name: Update Matrix
     needs: [ input-sanitation, obtain-mergeables ]
+    if: needs.input-sanitation.outputs.target-repo != ''
     runs-on: ubuntu-latest
     strategy:
       matrix:

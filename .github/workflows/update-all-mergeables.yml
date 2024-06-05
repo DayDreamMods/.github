@@ -36,18 +36,25 @@ jobs:
       matrix:
         target-repo: ${{ fromJson(needs.get-repositories.outputs.repositories) }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.target-repo }}
+
       - name: Trigger workflows
         id: mergeables
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.ORG_PAT }}
           script: |
+            const fs = require('fs');
+            console.log(fs.existSync('.github'));
             const homeNameSplit = ("${{ github.repository }}").split('/');
 
             github.rest.actions.createWorkflowDispatch({
               owner: homeNameSplit[0],
               repo: homeNameSplit[1],
-              workflow_id: 'update-mergeables.yml',
+              workflow_id: targetWorkflow,
               ref: context.payload.repository.default_branch,
               inputs: { 
                 "filter-mergeable": '${{ inputs.filter-mergeable }}',
