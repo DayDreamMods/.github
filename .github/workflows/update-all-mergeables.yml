@@ -16,9 +16,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            core.summary.addRaw("Initiating organization-wide update of '${{ inputs.filter-mergeable }}'.");
-            core.summary.addSeparator();
-            core.summary.write();
+            core.notice("Initiating organization-wide update of '${{ inputs.filter-mergeable }}'.");
 
   get-repositories:
     name: Organization Repositories

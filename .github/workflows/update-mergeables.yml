@@ -21,9 +21,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            core.summary.addRaw("Initiating update of '${{ inputs.filter-mergeable }}' @ '${{ inputs.target-repo }}'.");
-            core.summary.addSeparator();
-            core.summary.write();
+            core.notice("Initiating update of '${{ inputs.filter-mergeable }}' @ '${{ inputs.target-repo }}'.");
             
   input-sanitation:
     name: Input Sanitation
