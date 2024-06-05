@@ -46,6 +46,7 @@ jobs:
         id: mergeables
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.ORG_PAT }}
           script: |
             const filePath = '.github/.mergeables';
             const fs = require('fs');
