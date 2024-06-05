@@ -39,6 +39,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           ref: ${{ inputs.target-branch }}
           repository: ${{ steps.input-sanitation.outputs.target-repo }}
 
@@ -98,12 +99,10 @@ jobs:
         with:
           script: |
             const execSync = require('child_process').execSync;
-            const currentSymRef = execSync('git symbolic-ref -q HEAD').toString();
             const currentBranch = execSync('git rev-parse --abbrev-ref HEAD').toString();
-            const trackingBranch = execSync('git rev-parse --abbrev-ref --symbolic-full-name @{u}').toString();
+            const trackingBranch = execSync(`git rev-parse --abbrev-ref --symbolic-full-name ${currentBranch}@{upstream}`).toString();
             const diff = execSync(`git diff ${currentBranch} ${trackingBranch}`).toString();
             core.setOutput('pr-needed', diff != "" ? 'true' : 'false');
-            console.log(currentSymRef);
             console.log(currentBranch);
             console.log(trackingBranch);
             console.log(diff);
