@@ -63,6 +63,7 @@ jobs:
               core.warning("${{ matrix.target-repo }} doesn't contain a .github/.mergeables");
               return;
             }
+            core.notice("Updating '${{ matrix.target-repo }}'.");
             const homeNameSplit = ("${{ github.repository }}").split('/');
 
             github.rest.actions.createWorkflowDispatch({
