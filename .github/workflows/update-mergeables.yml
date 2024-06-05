@@ -13,6 +13,17 @@ on:
         description: Filter matrix entries to contain this text.
         required: false
 jobs:
+  inputs-report:
+    name: Summary Report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Script
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.summary.addRaw("Initiating update of '${{ inputs.filter-mergeable }}' @ '${{ inputs.target-repo }}'.");
+            core.summary.addSeparator();
+            
   input-sanitation:
     name: Input Sanitation
     runs-on: ubuntu-latest
