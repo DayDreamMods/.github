@@ -23,11 +23,13 @@ on:
         default: main
         required: false
 jobs:
-  merge-and-pr:
-    name: Merge & PR
+  get-target-data:
+    name: Target Data
     runs-on: ubuntu-latest
     env:
       mergeable-id: ${{ inputs.source-branch }}@${{ inputs.source-repo }}->${{ inputs.target-branch }}
+    outputs:
+      target-repo: ${{ steps.input-sanitation.outputs.target-repo }}
     steps:
       - name: Input Sanitation
         id: input-sanitation
@@ -36,13 +38,18 @@ jobs:
           script: |
             core.setOutput('target-repo', '${{ inputs.target-repo }}' == '~' ? '${{ github.repository }}' : '${{ inputs.target-repo }}');
                       
+  merge-and-pr:
+    name: Merge & PR
+    needs: get-target-data
+    runs-on: ubuntu-latest
+    env:
+      mergeable-id: ${{ inputs.source-branch }}@${{ inputs.source-repo }}->${{ inputs.target-branch }}
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          ref: ${{ inputs.target-branch }}
-          repository: ${{ steps.input-sanitation.outputs.target-repo }}
-
+          repository: ${{ needs.get-target-data.outputs.target-repo }}
+          
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
         with:
@@ -55,38 +62,6 @@ jobs:
         run: |
           git remote add auto-merge https://github.com/${{ inputs.source-repo }}.git
           git fetch auto-merge ${{ inputs.source-branch }}
-
-      - name: Ensure .gitmergeables entry
-        id: ensure-mergeables
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const entry = '${{ env.mergeable-id }}';
-            const filePath = '.github/.mergeables';
-            const fs = require('fs');
-            const path = require('path');
-
-            // Check if the file exists and read its content if it does
-            let fileContent = '';
-            if (fs.existsSync(filePath)) {
-              fileContent = fs.readFileSync(filePath, 'utf8');
-            }
-
-            if (!fileContent.includes(entry)) {
-              // Add the entry to the file content
-              fileContent += `${entry}\n`;
-              
-              // Write the updated content back to the file
-              fs.writeFileSync(filePath, fileContent, 'utf8');
-
-              // Stage the changes, commit, and push
-              const execSync = require('child_process').execSync;
-              execSync('git add ' + filePath);
-              execSync(`git commit -m "Add .github/.mergeables entry: ${entry}"`);
-            } else {
-              console.log('Entry already exists in .mergeables');
-            }
-          result-encoding: json
                     
       - name: Merge Results
         id: merge
@@ -120,4 +95,85 @@ jobs:
           title: "Update ${{ inputs.source-repo }}/${{ inputs.source-branch }}"
           body: ""
           branch: chore/mergeables/update/${{ inputs.source-branch }}
+          author: "RedEyeMods <redeyemodding@gmail.com>"
+
+  metatag-and-pr:
+    name: Tag & PR
+    needs: get-target-data
+    runs-on: ubuntu-latest
+    env:
+      mergeable-id: ${{ inputs.source-branch }}@${{ inputs.source-repo }}->${{ inputs.target-branch }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.get-target-data.outputs.target-repo }}
+            
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          
+      - name: Ensure .gitmergeables entry
+        id: ensure-mergeables
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const entry = '${{ env.mergeable-id }}';
+            const filePath = '.github/.mergeables';
+            const fs = require('fs');
+            const path = require('path');
+
+            // Check if the file exists and read its content if it does
+            let fileContent = '';
+            if (fs.existsSync(filePath)) {
+              fileContent = fs.readFileSync(filePath, 'utf8');
+            }
+
+            if (!fileContent.includes(entry)) {
+              // Add the entry to the file content
+              fileContent += `${entry}\n`;
+              
+              // Write the updated content back to the file
+              fs.writeFileSync(filePath, fileContent, 'utf8');
+
+              // Stage the changes, commit, and push
+              const execSync = require('child_process').execSync;
+              execSync('git add ' + filePath);
+              execSync(`git commit -m "Add .github/.mergeables entry: ${entry}"`);
+            } else {
+              console.log('Entry already exists in .mergeables');
+            }
+          result-encoding: json
+          
+      - name: PR Check
+        id: pr-check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const execSync = require('child_process').execSync;
+            const branchStatus = execSync('git status -sb').toString();
+            const result = branchStatus.match(/^##\s*([\w\d-_/\\]+)\.\.\.([\w\d-_/\\]+)/)
+            if (!result)
+              throw new Exception("Weird");
+
+            const currentBranch = result[1];
+            const trackingBranch = result[2];
+            const diff = execSync(`git diff ${currentBranch} ${trackingBranch}`).toString();
+            core.setOutput('pr-needed', diff != "" ? 'true' : 'false');
+            console.log(currentBranch);
+            console.log(trackingBranch);
+            console.log(diff);
+
+      - name: Create Pull Request
+        if: steps.pr-check.outputs.pr-needed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.ORG_PAT }}
+          title: "Add mergeable metdata ${{ inputs.source-repo }}/${{ inputs.source-branch }}"
+          body: ""
+          branch: chore/mergeables/metadata/${{ inputs.source-branch }}
           author: "RedEyeMods <redeyemodding@gmail.com>"
