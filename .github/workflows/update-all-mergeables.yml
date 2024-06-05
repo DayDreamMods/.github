@@ -3,7 +3,7 @@ name: Trigger Org-Wide Update
 on: 
   workflow_dispatch:
     inputs:
-      mergeable-filter:
+      filter-mergeable:
         type: string
         description: Mergeable id to update in the form of (feature/mergeable/...@RedEyeMods/.github).
         default: ~
@@ -21,6 +21,56 @@ jobs:
         with:
           github-token: ${{ secrets.ORG_PAT }}
           script: |
-            console.log(
-              await github.request(`GET ${context.payload.organization.repos_url.replace('https://api.github.com', '')}`)
-            );
+            var request = await github.request(`GET ${context.payload.organization.repos_url.replace('https://api.github.com', '')}`);
+            if (request.status != 200)
+              throw new Exception('Bad API response: ' + request.status);
+
+            var repos = request.data.map(i => i.full_name);
+            console.log(repos);
+            return repos;
+  
+  update-matrix:
+    name: Update Matrix
+    needs: get-repositories
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target-repo: ${{ fromJson(needs.get-repositories.outputs.repositories) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.target-repo }}
+
+      - name: Trigger workflow if it exists
+        id: mergeables
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const filePath = '.github/.mergeables';
+            const fs = require('fs');
+            const path = require('path');
+
+            // Check if the file exists and read its content if it does
+            let fileContent = '';
+            if (fs.existsSync(filePath)) {
+              fileContent = fs.readFileSync(filePath, 'utf8');
+            }
+            
+            const workflowExists = fileContent.includes('feature/mergeable/manual-workflows@RedEyeMods/.github@main');
+
+            if (!workflowExists) {
+              core.warn('Repository ${{matrix.target-repo}} doesn't contain the workflow');
+              return;
+            }
+            const nameSplit = ("${{ matrix.target-repo }}").split('/');
+            github.rest.actions.createWorkflowDispatch({
+              owner: nameSplit[0],
+              repo: nameSplit[1],
+              workflow_id: 'update-mergeables.yml',
+              ref: 'main'
+              inputs: [
+                { filter-mergeable: '${{ inputs.filter-mergeable }}' }
+              ]
+            })
+          result-encoding: json
