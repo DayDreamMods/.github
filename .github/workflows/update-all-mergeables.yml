@@ -55,13 +55,17 @@ jobs:
             });
             if (repoWorkflowsRequest.status != 200)
               throw new Exception("Bad response: " + repoWorkflowsRequest.status);
-
+            
+            const targetWorkflow = 'update-mergeables.yml';
             const repoWorkflows = repoWorkflowsRequest.data.workflows;
-            console.log(repoWorkflows);
+            if (repoWorkflows.filter(workflow => workflow.path.endsWith(targetWorkflow)).length != 1) {
+              core.warning(`Repo ${nameSplit[0]}/${nameSplit[1]} doesn't contain ${targetWorkflow}!`);
+              return;
+            }
             github.rest.actions.createWorkflowDispatch({
               owner: nameSplit[0],
               repo: nameSplit[1],
-              workflow_id: 'update-mergeables.yml',
+              workflow_id: targetWorkflow,
               ref: 'main',
               inputs: { 
                 "filter-mergeable": '${{ inputs.filter-mergeable }}' 
