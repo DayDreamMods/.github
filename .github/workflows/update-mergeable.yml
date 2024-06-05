@@ -99,8 +99,13 @@ jobs:
         with:
           script: |
             const execSync = require('child_process').execSync;
-            const currentBranch = execSync('git rev-parse --abbrev-ref HEAD').toString();
-            const trackingBranch = execSync(`git rev-parse --abbrev-ref --symbolic-full-name @{u}`).toString();
+            const branchStatus = execSync('git status -sb');
+            const result = branchStatus.match(/^##\s*([\w\d-_/\\]+)\.\.\.([\w\d-_/\\]+)/)
+            if (!result)
+              throw new Exception("Weird");
+
+            const currentBranch = result[1];
+            const trackingBranch = result[2];
             const diff = execSync(`git diff ${currentBranch} ${trackingBranch}`).toString();
             core.setOutput('pr-needed', diff != "" ? 'true' : 'false');
             console.log(currentBranch);
