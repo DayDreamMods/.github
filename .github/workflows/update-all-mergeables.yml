@@ -69,8 +69,8 @@ jobs:
               repo: nameSplit[1],
               workflow_id: 'update-mergeables.yml',
               ref: 'main'
-              inputs: [
-                { filter-mergeable: '${{ inputs.filter-mergeable }}' }
-              ]
+              inputs: { 
+                filter-mergeable: '${{ inputs.filter-mergeable }}' 
+              }
             });
           result-encoding: json
