@@ -11,7 +11,6 @@ on:
       filter-mergeable:
         type: string
         description: Filter matrix entries to contain this text.
-        default: "~"
         required: false
 jobs:
   input-sanitation:
@@ -58,7 +57,7 @@ jobs:
 
             const filter = ${{ inputs.filter-mergeable }};
 
-            return fileContent.split('\n').filter(function(el) { return el != '' && (filter == '~' || el.includes(${{ inputs.filter-mergeable }})) });
+            return fileContent.split('\n').filter(function(el) { return el != '' && (filter == '' || el.includes('${{ inputs.filter-mergeable }}')) });
           result-encoding: json
 
   update-matrix:

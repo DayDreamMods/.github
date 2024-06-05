@@ -3,10 +3,9 @@ name: Trigger Org-Wide Update
 on: 
   workflow_dispatch:
     inputs:
-      mergeable-filter:
+      filter-mergeable:
         type: string
         description: Mergeable id to update in the form of (feature/mergeable/...@RedEyeMods/.github).
-        default: ~
         required: true
 jobs:
   get-repositories:
@@ -21,6 +20,56 @@ jobs:
         with:
           github-token: ${{ secrets.ORG_PAT }}
           script: |
-            console.log(github);
-            // const { data: repos } = github.rest.repos.listForOrg({ org:  });
-            // console.log(repos);
+            var request = await github.request(`GET ${context.payload.organization.repos_url.replace('https://api.github.com', '')}`);
+            if (request.status != 200)
+              throw new Exception('Bad API response: ' + request.status);
+
+            var repos = request.data.filter(i => !i.archived && !i.private && !i.is_template).map(i => i.full_name);
+            console.log(repos);
+            return repos;
+  
+  update-matrix:
+    name: Update Matrix
+    needs: get-repositories
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target-repo: ${{ fromJson(needs.get-repositories.outputs.repositories) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+          repository: ${{ matrix.target-repo }}
+
+      - name: Trigger workflow if it exists
+        id: mergeables
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ORG_PAT }}
+          script: |
+            const nameSplit = ("${{ matrix.target-repo }}").split('/');
+            const repoWorkflowsRequest = await github.rest.actions.listRepoWorkflows({
+              owner: nameSplit[0],
+              repo: nameSplit[1]
+            });
+            if (repoWorkflowsRequest.status != 200)
+              throw new Exception("Bad response: " + repoWorkflowsRequest.status);
+            
+            const targetWorkflow = 'update-mergeables.yml';
+            const repoWorkflows = repoWorkflowsRequest.data.workflows;
+            
+            if (repoWorkflows.filter(workflow => workflow.path.endsWith(targetWorkflow)).length != 1) {
+              core.warning(`Repo ${nameSplit[0]}/${nameSplit[1]} doesn't contain ${targetWorkflow}!`);
+              return;
+            }
+            github.rest.actions.createWorkflowDispatch({
+              owner: nameSplit[0],
+              repo: nameSplit[1],
+              workflow_id: targetWorkflow,
+              ref: context.payload.repository.default_branch,
+              inputs: { 
+                "filter-mergeable": '${{ inputs.filter-mergeable }}' 
+              }
+            });
+          result-encoding: json
