@@ -50,7 +50,8 @@ jobs:
           script: |
             const fs = require('fs');
             if (!fs.existsSync('.github/.mergeables')) {
-              core.warning('${{ matrix.target-repo }} doesn't contain a .github/.mergeables');
+              core.warning("${{ matrix.target-repo }} doesn't contain a .github/.mergeables");
+              return;
             }
             const homeNameSplit = ("${{ github.repository }}").split('/');
 
