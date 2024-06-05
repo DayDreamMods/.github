@@ -7,7 +7,6 @@ on:
         type: string
         description: Mergeable id to update in the form of (feature/mergeable/...@RedEyeMods/.github).
         required: false
-        default: ""
 jobs:
   inputs-report:
     name: Summary Report
