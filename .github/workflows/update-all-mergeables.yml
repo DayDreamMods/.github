@@ -22,5 +22,5 @@ jobs:
           github-token: ${{ secrets.ORG_PAT }}
           script: |
             console.log(
-              github.request(`GET ${context.organization.repos_url.replace('https://api.github.com', '')}`)
+              github.request(`GET ${context.payload.organization.repos_url.replace('https://api.github.com', '')}`)
             );
