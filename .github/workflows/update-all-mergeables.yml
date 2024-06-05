@@ -39,6 +39,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          sparse-checkout: .github
           repository: ${{ matrix.target-repo }}
 
       - name: Trigger workflow if it exists
