@@ -1,4 +1,4 @@
-name: Install Mergeable
+name: "[Manual] Install Mergeable"
 
 on: 
   workflow_dispatch:

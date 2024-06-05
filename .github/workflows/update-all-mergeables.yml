@@ -1,4 +1,4 @@
-name: Trigger Org-Wide Update
+name: "[Manual] Trigger Org-Wide Update"
 
 on: 
   workflow_dispatch:
