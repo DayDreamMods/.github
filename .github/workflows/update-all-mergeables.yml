@@ -72,5 +72,5 @@ jobs:
               inputs: [
                 { filter-mergeable: '${{ inputs.filter-mergeable }}' }
               ]
-            })
+            });
           result-encoding: json
