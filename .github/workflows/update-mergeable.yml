@@ -90,7 +90,7 @@ jobs:
       - name: Merge Results
         id: merge
         run: |
-          git merge -X theirs --allow-unrelated-histories auto-merge/${{ steps.input-sanitation.outputs.source-branch }}
+          git merge -X theirs --allow-unrelated-histories auto-merge/${{ inputs.source-branch }}
 
       - name: PR Check
         id: pr-check
