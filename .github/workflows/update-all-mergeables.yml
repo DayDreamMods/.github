@@ -24,7 +24,7 @@ jobs:
             if (request.status != 200)
               throw new Exception('Bad API response: ' + request.status);
 
-            var repos = request.data.filter(i => !i.archived && !i.private && !i.is_template).map(i => i.full_name);
+            var repos = request.data.filter(i => !i.archived && !i.private).map(i => i.full_name);
             console.log(repos);
             return repos;
   
