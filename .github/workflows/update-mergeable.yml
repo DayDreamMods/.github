@@ -103,6 +103,9 @@ jobs:
             const trackingBranch = execSync(`git for-each-ref --format='%(upstream:short)' "${currentSymRef}"`);
             const diff = execSync(`git diff ${currentBranch} ${trackingBranch}`);
             core.setOutput('pr-needed', diff != "" ? 'true' : 'false');
+            console.log(currentBranch);
+            console.log(trackingBranch);
+            console.log(diff);
 
       - name: Create Pull Request
         if: steps.pr-check.outputs.pr-needed == 'true'
