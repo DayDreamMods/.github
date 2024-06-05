@@ -47,7 +47,7 @@ jobs:
         with:
           github-token: ${{ secrets.ORG_PAT }}
           script: |
-            const filePath = '.github/.mergeables';
+            const filePath = './.github/.mergeables';
             const fs = require('fs');
             const path = require('path');
 
