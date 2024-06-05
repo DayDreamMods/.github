@@ -1,4 +1,4 @@
-name: Update Mergeables
+name: "[Manual] Update Mergeable(s)"
 
 on: 
   workflow_dispatch:
