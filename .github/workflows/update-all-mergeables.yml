@@ -40,7 +40,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           sparse-checkout: .github
-          repository: ${{ matrix.target-repo }}
 
       - name: Trigger workflow if it exists
         id: mergeables
@@ -48,28 +47,16 @@ jobs:
         with:
           github-token: ${{ secrets.ORG_PAT }}
           script: |
-            const nameSplit = ("${{ matrix.target-repo }}").split('/');
-            const repoWorkflowsRequest = await github.rest.actions.listRepoWorkflows({
-              owner: nameSplit[0],
-              repo: nameSplit[1]
-            });
-            if (repoWorkflowsRequest.status != 200)
-              throw new Exception("Bad response: " + repoWorkflowsRequest.status);
-            
-            const targetWorkflow = 'update-mergeables.yml';
-            const repoWorkflows = repoWorkflowsRequest.data.workflows;
-            
-            if (repoWorkflows.filter(workflow => workflow.path.endsWith(targetWorkflow)).length != 1) {
-              core.warning(`Repo ${nameSplit[0]}/${nameSplit[1]} doesn't contain ${targetWorkflow}!`);
-              return;
-            }
+            const homeNameSplit = ("${{ github.repository }}").split('/');
+
             github.rest.actions.createWorkflowDispatch({
-              owner: nameSplit[0],
-              repo: nameSplit[1],
-              workflow_id: targetWorkflow,
+              owner: homeNameSplit[0],
+              repo: homeNameSplit[1],
+              workflow_id: 'update-mergeables.yml',
               ref: context.payload.repository.default_branch,
               inputs: { 
-                "filter-mergeable": '${{ inputs.filter-mergeable }}' 
+                "filter-mergeable": '${{ inputs.filter-mergeable }}',
+                "target-repo": '${{ matrix.target-repo }}'
               }
             });
           result-encoding: json
