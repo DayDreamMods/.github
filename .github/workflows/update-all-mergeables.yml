@@ -1,0 +1,26 @@
+name: Trigger Org-Wide Update
+
+on: 
+  workflow_dispatch:
+    inputs:
+      mergeable-filter:
+        type: string
+        description: Mergeable id to update in the form of (feature/mergeable/...@RedEyeMods/.github).
+        default: ~
+        required: true
+jobs:
+  get-repositories:
+    name: Organization Repositories
+    runs-on: ubuntu-latest
+    outputs:
+      repositories: ${{ steps.org-grab.outputs.result }}
+    steps:
+      - name: Get Organization Data
+        id: org-grab
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ORG_PAT }}
+          script: |
+            console.log(github);
+            // const { data: repos } = github.rest.repos.listForOrg({ org:  });
+            // console.log(repos);
