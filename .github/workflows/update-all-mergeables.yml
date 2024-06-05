@@ -58,6 +58,7 @@ jobs:
             }
             
             console.log(fileContent);
+            exec.exec('ls');
             const workflowExists = fileContent.includes('feature/mergeable/manual-workflows@RedEyeMods/.github->main');
 
             if (!workflowExists) {
