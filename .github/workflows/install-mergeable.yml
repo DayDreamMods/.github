@@ -93,7 +93,7 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.ORG_PAT }}
-          title: "Update ${{ inputs.source-repo }}/${{ inputs.source-branch }}"
+          title: "Update ${{ inputs.source-branch }}@${{ inputs.source-repo }}"
           body: ""
           branch: chore/mergeables/update/${{ inputs.source-branch }}
           author: "RedEyeMods <redeyemodding@gmail.com>"
@@ -174,7 +174,7 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.ORG_PAT }}
-          title: "Add mergeable metdata ${{ inputs.source-repo }}/${{ inputs.source-branch }}"
+          title: "Add mergeable metdata ${{ inputs.source-branch }}@${{ inputs.source-repo }}"
           body: ""
           branch: chore/mergeables/metadata/${{ inputs.source-branch }}
           author: "RedEyeMods <redeyemodding@gmail.com>"
