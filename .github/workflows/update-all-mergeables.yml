@@ -67,7 +67,7 @@ jobs:
             github.rest.actions.createWorkflowDispatch({
               owner: nameSplit[0],
               repo: nameSplit[1],
-              workflow_id: 'update-mergeables',
+              workflow_id: 'update-mergeables.yml',
               ref: 'main',
               inputs: { 
                 "filter-mergeable": '${{ inputs.filter-mergeable }}' 
