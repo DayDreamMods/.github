@@ -21,6 +21,6 @@ jobs:
         with:
           github-token: ${{ secrets.ORG_PAT }}
           script: |
-            console.log(github);
-            // const { data: repos } = github.rest.repos.listForOrg({ org:  });
-            // console.log(repos);
+            console.log(context);
+            const { data: repos } = github.rest.repos.listForOrg({ org: context.repo.owner });
+            console.log(repos);
