@@ -41,7 +41,6 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const entry = '${{ env.mergeable-id }}';
             const filePath = '.github/.mergeables';
             const fs = require('fs');
             const path = require('path');
@@ -52,7 +51,7 @@ jobs:
               fileContent = fs.readFileSync(filePath, 'utf8');
             }
 
-            return fileContent.length > 0 ? fileContent.split('\n') : [];
+            return fileContent.split('\n').filter(function(el) { return el != '' });
           result-encoding: json
 
   update-matrix:
@@ -83,7 +82,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ env.target-repo }}
-          ref: ${{ steps.matrix-sanitation.target-branch }}
+          ref: ${{ steps.matrix-sanitation.outputs.target-branch }}
           
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
@@ -95,13 +94,13 @@ jobs:
           
       - name: Add New Remote
         run: |
-          git remote add auto-merge https://github.com/${{ steps.matrix-sanitation.source-repo }}.git
-          git fetch auto-merge ${{ steps.matrix-sanitation.source-branch }}
+          git remote add auto-merge https://github.com/${{ steps.matrix-sanitation.outputs.source-repo }}.git
+          git fetch auto-merge ${{ steps.matrix-sanitation.outputs.source-branch }}
                     
       - name: Merge Results
         id: merge
         run: |
-          git merge -X theirs --allow-unrelated-histories auto-merge/${{ steps.matrix-sanitation.source-branch }}
+          git merge -X theirs --allow-unrelated-histories auto-merge/${{ steps.matrix-sanitation.outputs.source-branch }}
 
       - name: PR Check
         id: pr-check
@@ -127,7 +126,7 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.ORG_PAT }}
-          title: "Update ${{ steps.matrix-sanitation.source-repo }}/${{ steps.matrix-sanitation.source-branch }}"
+          title: "Update ${{ steps.matrix-sanitation.outputs.source-branch }}@${{ steps.matrix-sanitation.outputs.source-repo }}"
           body: ""
-          branch: chore/mergeables/update/${{ steps.matrix-sanitation.source-branch }}
+          branch: chore/mergeables/update/${{ steps.matrix-sanitation.outputs.source-branch }}
           author: "RedEyeMods <redeyemodding@gmail.com>"
