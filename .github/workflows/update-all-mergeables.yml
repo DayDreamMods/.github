@@ -58,11 +58,11 @@ jobs:
             
             const targetWorkflow = 'update-mergeables.yml';
             const repoWorkflows = repoWorkflowsRequest.data.workflows;
+            console.log(context);
             if (repoWorkflows.filter(workflow => workflow.path.endsWith(targetWorkflow)).length != 1) {
               core.warning(`Repo ${nameSplit[0]}/${nameSplit[1]} doesn't contain ${targetWorkflow}!`);
               return;
             }
-            console.log(context);
             github.rest.actions.createWorkflowDispatch({
               owner: nameSplit[0],
               repo: nameSplit[1],
