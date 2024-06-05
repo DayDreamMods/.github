@@ -57,10 +57,10 @@ jobs:
               fileContent = fs.readFileSync(filePath, 'utf8');
             }
             
-            const workflowExists = fileContent.includes('feature/mergeable/manual-workflows@RedEyeMods/.github@main');
+            const workflowExists = fileContent.includes('feature/mergeable/manual-workflows@RedEyeMods/.github->main');
 
             if (!workflowExists) {
-              core.warn("Repository ${{matrix.target-repo}} doesn't contain the workflow");
+              core.warning("Repository ${{matrix.target-repo}} doesn't contain the workflow");
               return;
             }
             const nameSplit = ("${{ matrix.target-repo }}").split('/');
