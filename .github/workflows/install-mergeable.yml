@@ -1,4 +1,4 @@
-name: Update Mergeable
+name: Install Mergeable
 
 on: 
   workflow_dispatch:
