@@ -49,10 +49,14 @@ jobs:
           github-token: ${{ secrets.ORG_PAT }}
           script: |
             const nameSplit = ("${{ matrix.target-repo }}").split('/');
-            const repoWorkflows = await github.rest.actions.listRepoWorkflows({
+            const repoWorkflowsRequest = await github.rest.actions.listRepoWorkflows({
               owner: nameSplit[0],
               repo: nameSplit[1]
             });
+            if (repoWorkflowsRequest.status != 200)
+              throw new Exception("Bad response: " + repoWorkflowsRequest.status);
+
+            const repoWorkflows = repoWorkflowsRequest.data.workflows;
             console.log(repoWorkflows);
             github.rest.actions.createWorkflowDispatch({
               owner: nameSplit[0],
