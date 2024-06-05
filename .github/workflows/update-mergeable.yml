@@ -103,6 +103,7 @@ jobs:
             const trackingBranch = execSync(`git for-each-ref --format='%(upstream:short)' "${currentSymRef}"`).toString();
             const diff = execSync(`git diff ${currentBranch} ${trackingBranch}`).toString();
             core.setOutput('pr-needed', diff != "" ? 'true' : 'false');
+            console.log(currentSymRef);
             console.log(currentBranch);
             console.log(trackingBranch);
             console.log(diff);
