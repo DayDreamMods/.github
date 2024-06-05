@@ -58,7 +58,7 @@ jobs:
             
             const targetWorkflow = 'update-mergeables.yml';
             const repoWorkflows = repoWorkflowsRequest.data.workflows;
-            console.log(context);
+            
             if (repoWorkflows.filter(workflow => workflow.path.endsWith(targetWorkflow)).length != 1) {
               core.warning(`Repo ${nameSplit[0]}/${nameSplit[1]} doesn't contain ${targetWorkflow}!`);
               return;
@@ -67,7 +67,7 @@ jobs:
               owner: nameSplit[0],
               repo: nameSplit[1],
               workflow_id: targetWorkflow,
-              ref: 'main',
+              ref: context.payload.repository.default_branch,
               inputs: { 
                 "filter-mergeable": '${{ inputs.filter-mergeable }}' 
               }
