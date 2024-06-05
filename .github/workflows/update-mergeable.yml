@@ -88,7 +88,6 @@ jobs:
           result-encoding: json
                     
       - name: Merge Results
-        if: env.merge_needed == 'true'
         id: merge
         run: |
           git merge -X theirs --allow-unrelated-histories auto-merge/${{ steps.input-sanitation.outputs.source-branch }}
@@ -106,7 +105,7 @@ jobs:
             core.setOutput('pr-needed', diff != "" ? 'true' : 'false');
 
       - name: Create Pull Request
-        if: steps.pr-check.outputs.pr-neede == 'true'
+        if: steps.pr-check.outputs.pr-needed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.ORG_PAT }}
