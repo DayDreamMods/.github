@@ -23,6 +23,7 @@ jobs:
           script: |
             core.summary.addRaw("Initiating update of '${{ inputs.filter-mergeable }}' @ '${{ inputs.target-repo }}'.");
             core.summary.addSeparator();
+            core.summary.write();
             
   input-sanitation:
     name: Input Sanitation
