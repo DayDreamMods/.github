@@ -48,24 +48,6 @@ jobs:
         with:
           github-token: ${{ secrets.ORG_PAT }}
           script: |
-            const filePath = './.github/.mergeables';
-            const fs = require('fs');
-            const path = require('path');
-
-            // Check if the file exists and read its content if it does
-            let fileContent = '';
-            if (fs.existsSync(filePath)) {
-              fileContent = fs.readFileSync(filePath, 'utf8');
-            }
-            
-            console.log(fileContent);
-            exec.exec('ls');
-            const workflowExists = fileContent.includes('feature/mergeable/manual-workflows@RedEyeMods/.github->main');
-
-            if (!workflowExists) {
-              core.warning("Repository ${{matrix.target-repo}} doesn't contain the workflow");
-              return;
-            }
             const nameSplit = ("${{ matrix.target-repo }}").split('/');
             github.rest.actions.createWorkflowDispatch({
               owner: nameSplit[0],
