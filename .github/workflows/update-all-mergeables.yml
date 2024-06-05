@@ -48,13 +48,13 @@ jobs:
           github-token: ${{ secrets.ORG_PAT }}
           script: |
             const fs = require('fs');
-            console.log(fs.existsSync('.github'));
+            console.log(fs.existsSync('.github/.mergeables'));
             const homeNameSplit = ("${{ github.repository }}").split('/');
 
             github.rest.actions.createWorkflowDispatch({
               owner: homeNameSplit[0],
               repo: homeNameSplit[1],
-              workflow_id: targetWorkflow,
+              workflow_id: 'update-mergeables.yml',
               ref: context.payload.repository.default_branch,
               inputs: { 
                 "filter-mergeable": '${{ inputs.filter-mergeable }}',
