@@ -48,7 +48,7 @@ jobs:
           github-token: ${{ secrets.ORG_PAT }}
           script: |
             const fs = require('fs');
-            console.log(fs.existSync('.github'));
+            console.log(fs.existsSync('.github'));
             const homeNameSplit = ("${{ github.repository }}").split('/');
 
             github.rest.actions.createWorkflowDispatch({
