@@ -98,10 +98,10 @@ jobs:
         with:
           script: |
             const execSync = require('child_process').execSync;
-            const currentSymRef = execSync('git symbolic-ref -q HEAD');
-            const currentBranch = execSync('git rev-parse --abbrev-ref HEAD');
-            const trackingBranch = execSync(`git for-each-ref --format='%(upstream:short)' "${currentSymRef}"`);
-            const diff = execSync(`git diff ${currentBranch} ${trackingBranch}`);
+            const currentSymRef = execSync('git symbolic-ref -q HEAD').toString();
+            const currentBranch = execSync('git rev-parse --abbrev-ref HEAD').toString();
+            const trackingBranch = execSync(`git for-each-ref --format='%(upstream:short)' "${currentSymRef}"`).toString();
+            const diff = execSync(`git diff ${currentBranch} ${trackingBranch}`).toString();
             core.setOutput('pr-needed', diff != "" ? 'true' : 'false');
             console.log(currentBranch);
             console.log(trackingBranch);
