@@ -48,6 +48,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.target-branch }}
           repository: ${{ needs.get-target-data.outputs.target-repo }}
           
       - name: Import GPG key

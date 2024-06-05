@@ -1,0 +1,133 @@
+name: Update Mergeables
+
+on: 
+  workflow_dispatch:
+    inputs:
+      target-repo:
+        type: string
+        description: The repository to merge into.
+        default: "~"
+        required: false
+jobs:
+  input-sanitation:
+    name: Input Sanitation
+    runs-on: ubuntu-latest
+    outputs:
+      target-repo: ${{ steps.script.outputs.target-repo }}
+    steps:
+      - name: Script Exec
+        id: script
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setOutput('target-repo', '${{ inputs.target-repo }}' == '~' ? '${{ github.repository }}' : '${{ inputs.target-repo }}');
+                
+  obtain-mergeables:
+    name: Checkout FS
+    needs: input-sanitation
+    runs-on: ubuntu-latest
+    env:
+      target-repo: ${{ needs.input-sanitation.outputs.target-repo }}
+    outputs:
+      mergeables: ${{ steps.mergeables.outputs.result }}
+    steps:      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.target-repo }}
+
+      - name: Get .mergeables list
+        id: mergeables
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const entry = '${{ env.mergeable-id }}';
+            const filePath = '.github/.mergeables';
+            const fs = require('fs');
+            const path = require('path');
+
+            // Check if the file exists and read its content if it does
+            let fileContent = '';
+            if (fs.existsSync(filePath)) {
+              fileContent = fs.readFileSync(filePath, 'utf8');
+            }
+
+            return fileContent.length > 0 ? fileContent.split('\n') : [];
+          result-encoding: json
+
+  update-matrix:
+    name: Update Matrix
+    needs: [ input-sanitation, obtain-mergeables ]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mergeable-id: ${{ fromJson(needs.obtain-mergeables.outputs.mergeables) }}
+    env:
+      target-repo: ${{ needs.input-sanitation.outputs.target-repo }}
+    steps:
+      - name: Matrix Sanitation
+        id: matrix-sanitation
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const input = "${{ matrix.mergeable-id }}";
+            const match = input.match(/([\w-\/]+)@([^/]+)\/(.+)->(.+)/);
+            if (!match)
+              throw new Error('Invalid input format. Expected format: branch/name@owner/repo->target-branch');
+
+            core.setOutput('source-branch', match[1]);
+            core.setOutput('source-repo', `${match[2]}/${match[3]}`);
+            core.setOutput('target-branch', match[4]);
+            
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.target-repo }}
+          ref: ${{ steps.matrix-sanitation.target-branch }}
+          
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          
+      - name: Add New Remote
+        run: |
+          git remote add auto-merge https://github.com/${{ steps.matrix-sanitation.source-repo }}.git
+          git fetch auto-merge ${{ steps.matrix-sanitation.source-branch }}
+                    
+      - name: Merge Results
+        id: merge
+        run: |
+          git merge -X theirs --allow-unrelated-histories auto-merge/${{ steps.matrix-sanitation.source-branch }}
+
+      - name: PR Check
+        id: pr-check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const execSync = require('child_process').execSync;
+            const branchStatus = execSync('git status -sb').toString();
+            const result = branchStatus.match(/^##\s*([\w\d-_/\\]+)\.\.\.([\w\d-_/\\]+)/)
+            if (!result)
+              throw new Exception("Weird");
+
+            const currentBranch = result[1];
+            const trackingBranch = result[2];
+            const diff = execSync(`git diff ${currentBranch} ${trackingBranch}`).toString();
+            core.setOutput('pr-needed', diff != "" ? 'true' : 'false');
+            console.log(currentBranch);
+            console.log(trackingBranch);
+            console.log(diff);
+
+      - name: Create Pull Request
+        if: steps.pr-check.outputs.pr-needed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.ORG_PAT }}
+          title: "Update ${{ steps.matrix-sanitation.source-repo }}/${{ steps.matrix-sanitation.source-branch }}"
+          body: ""
+          branch: chore/mergeables/update/${{ steps.matrix-sanitation.source-branch }}
+          author: "RedEyeMods <redeyemodding@gmail.com>"
