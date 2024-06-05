@@ -55,7 +55,7 @@ jobs:
               fileContent = fs.readFileSync(filePath, 'utf8');
             }
 
-            const filter = ${{ inputs.filter-mergeable }};
+            const filter = '${{ inputs.filter-mergeable }}';
 
             return fileContent.split('\n').filter(function(el) { return el != '' && (filter == '' || el.includes('${{ inputs.filter-mergeable }}')) });
           result-encoding: json
