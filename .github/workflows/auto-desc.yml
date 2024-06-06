@@ -11,6 +11,8 @@ env:
 jobs:
   explain-diff:
     runs-on: ubuntu-latest
+    env:
+      DIFF: ${{ github.event.pull_request.diff_url }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -23,5 +25,7 @@ jobs:
           echo "GIT_DIFF=$(git diff origin/$BASE_REF)\n" >> $GITHUB_OUTPUT
 
       - name: Print Diff
-        run: echo ${{ steps.get-diff.outputs.GIT_DIFF}}
+        run: |
+          echo ${{ steps.get-diff.outputs.GIT_DIFF}}
+          echo $DIFF
     
