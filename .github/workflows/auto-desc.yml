@@ -1,4 +1,4 @@
-name: Send request for description on PRs
+name: Auto PR Description
 
 on:
   pull_request:
@@ -12,8 +12,16 @@ jobs:
   explain-diff:
     runs-on: ubuntu-latest
     steps:
-      - name: Test
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Get Diff
+        id: get-diff
         run: |
-          echo $BASE_REF
-          echo $HEAD_REF
+          echo "GIT_DIFF=$(git diff $BASE_REF...$HEAD_REF)\n" >> $GITHUB_OUTPUT
+
+      - name: Print Diff
+        run: echo ${{ steps.get-diff.outputs.GIT_DIFF}}
     
