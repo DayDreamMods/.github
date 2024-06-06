@@ -1,11 +1,7 @@
 name: Repo Policy
 
 on:
-  create:
-  delete:
   pull_request:
-    branches:
-      - main
 
 jobs:
   org-policy:
