@@ -20,7 +20,7 @@ jobs:
       - name: Get Diff
         id: get-diff
         run: |
-          echo "GIT_DIFF=$(git diff origin/$BASE_REF...$HEAD_REF)\n" >> $GITHUB_OUTPUT
+          echo "GIT_DIFF=$(git diff origin/$BASE_REF)\n" >> $GITHUB_OUTPUT
 
       - name: Print Diff
         run: echo ${{ steps.get-diff.outputs.GIT_DIFF}}
