@@ -1,0 +1,19 @@
+name: Send request for description on PRs
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+env:
+  BASE_REF: ${{ github.base_ref }}
+  HEAD_REF: ${{ github.head_ref }}
+
+jobs:
+  explain-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: |
+          echo $BASE_REF
+          echo $HEAD_REF
+    
