@@ -12,20 +12,21 @@ jobs:
   explain-diff:
     runs-on: ubuntu-latest
     env:
-      DIFF: ${{ github.event.pull_request.diff_url }}
+      DIFF_URL: ${{ github.event.pull_request.diff_url }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
         with:
           fetch-depth: 2
 
-      - name: Get Diff
-        id: get-diff
-        run: |
-          echo "GIT_DIFF=$(git diff origin/$BASE_REF)\n" >> $GITHUB_OUTPUT
-
+      - name: Get Github Diff
+        id: myRequest
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: "DIFF_URL"
+          
       - name: Print Diff
         run: |
-          echo ${{ steps.get-diff.outputs.GIT_DIFF}}
+          echo ${{ steps.myRequest.outputs.response }}
           echo $DIFF
     
