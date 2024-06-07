@@ -27,5 +27,5 @@ jobs:
 
       - name: Print Diff
         run: |
-          echo ${{ fromJson(steps.myRequest.outputs.response).data }}
+          echo "${{ fromJson(steps.myRequest.outputs.response).data }}"
     
