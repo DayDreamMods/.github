@@ -8,17 +8,21 @@ jobs:
   username-whitelist:
     runs-on: ubuntu-latest
     env:
+      CURRENT_USER: ${{ github.event.pull_request.user.login }}
       USERNAME_WHITELIST: "['wwwDayDream']"
     outputs:
       USER_ALLOWED: ${{ steps.user-check.outputs.ENV_CONTAINS }}
     steps:
       - name: User Check
         id: user-check
-        run: echo "ENV_CONTAINS=${{ contains(fromJson(env.USERNAME_WHITELIST), github.event.pull_request.user.login) }}" >> $GITHUB_OUTPUT
+        run: |
+          echo "Checking if '$CURRENT_USER' is in '$USERNAME_WHITELIST'"
+          echo "ENV_CONTAINS=${{ contains(fromJson(env.USERNAME_WHITELIST), env.CURRENT_USER) }}" >> $GITHUB_OUTPUT
       - run: echo "${{ steps.user-check.outputs.ENV_CONTAINS }}"
 
   explain-diff:
-    if: github.event.pull_request.body == '$GPT'
+    needs: username-whitelist
+    if: github.event.pull_request.body == '$GPT' && needs.username-whitelist.outputs.USER_ALLOWED == 'true'
     runs-on: ubuntu-latest
     env:
       DIFF_URL: ${{ github.event.pull_request.diff_url }}
