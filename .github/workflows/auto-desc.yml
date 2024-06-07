@@ -5,11 +5,17 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  test:
+  username-whitelist:
     runs-on: ubuntu-latest
+    env:
+      USERNAME_WHITELIST: "['wwwDayDream']"
+    outputs:
+      USER_ALLOWED: ${{ steps.user-check.outputs.ENV_CONTAINS }}
     steps:
-      - name: Print User
-        run: echo ${{ toJson(github.event.pull_request.user) }}
+      - name: User Check
+        id: user-check
+        run: echo "ENV_CONTAINS=${{ contains(fromJson(env.USERNAME_WHITELIST), github.event.pull_request.user.login) }}" >> $GITHUB_OUTPUT
+      - run: echo "${{ steps.user-check.outputs.ENV_CONTAINS }}"
 
   explain-diff:
     if: github.event.pull_request.body == '$GPT'
