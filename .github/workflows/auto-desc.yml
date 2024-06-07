@@ -4,12 +4,19 @@ on:
   pull_request:
     types: [opened, synchronize]
 
-env:
-  BASE_REF: ${{ github.base_ref }}
-  HEAD_REF: ${{ github.head_ref }}
-
 jobs:
+  check-desc:
+    runs-on: ubuntu-latest
+    outputs:
+      FILL_DIFF: ${{ steps.description-check.outputs.CONTAINS_TEXT }}
+    steps:
+      - name: Description Check
+        id: description-check
+        run: echo "CONTAINS_TEXT=${{ contains(github.event.pull_request.body, '$DIFF$') }}" >> $GITHUB_OUTPUT
+
   explain-diff:
+    needs: check-desc
+    if: needs.check-desc.outputs.FILL_DIFF
     runs-on: ubuntu-latest
     env:
       DIFF_URL: ${{ github.event.pull_request.diff_url }}
@@ -26,3 +33,22 @@ jobs:
         env:
           GIT_DIFF: ${{ steps.git-diff-action.outputs.raw-diff }}
         run: echo "$GIT_DIFF"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - run: npm install openai
+
+      - name: Call OpenAI API
+        uses: actions/github-script@v7
+        env:
+          OPENAI_API_TOKEN: ${{ secrets.OPENAI_API_TOKEN }}
+        with:
+          script: |
+            const OpenAI = require("openai");
+            const ai = new OpenAI({
+              apiKey: process.env.OPENAI_API_KEY
+            });
+
+            console.log(ai);
