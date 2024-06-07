@@ -53,7 +53,13 @@ jobs:
             const owner = repoInfo[0];
             const repo = repoInfo[1];
             const prNumber = ${{ github.event.pull_request.id }};
-            console.log(`${owner}/${repo} | ${prNumber}`);
+            
+            github.rest.pulls.update({
+              owner: owner,
+              repo: repo,
+              pull_number: prNumber,
+              body: userContent
+            });
             return;
             core.warning("Running AI!!");
 
