@@ -44,9 +44,9 @@ jobs:
             const userContent = `Pull Request: ${{ github.event.pull_request.title }}
             Merges: ${{ github.base_ref }} -> ${{ github.head_ref }}
             ${{ steps.git-diff-action.outputs.raw-diff }}`;
-            console.log("Returning; User Message:\n")
+            console.log("Returning; User Message:\n");
             return;
-            core.warning("Running AI!!")
+            core.warning("Running AI!!");
 
             const completion = await ai.chat.completion.create({
               messages: [
