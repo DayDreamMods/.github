@@ -15,16 +15,14 @@ jobs:
       DIFF_URL: ${{ github.event.pull_request.diff_url }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
-      - name: Get Github Diff
-        id: myRequest
-        uses: indiesdev/curl@v1.1
-        with:
-          url: ${{ env.DIFF_URL }}
+      - uses: GrantBirki/git-diff-action@v2.7.0
+        id: git-diff-action
 
       - name: Print Diff
-        run: |
-          echo "${{ fromJson(steps.myRequest.outputs.response).data }}"
+        env:
+          GIT_DIFF: ${{ steps.git-diff-action.outputs.raw-diff }}
+        run: echo "$GIT_DIFF"
