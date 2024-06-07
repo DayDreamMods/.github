@@ -23,6 +23,7 @@ jobs:
         id: myRequest
         run: |
           curl -s "$DIFF_URL" -o diff.txt
+          cat diff.txt
           echo "GIT_DIFF<<EOF" >> $GITHUB_OUTPUT
           cat diff.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
