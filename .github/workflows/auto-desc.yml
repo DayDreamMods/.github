@@ -69,9 +69,10 @@ jobs:
               ],
               model: "gpt-3.5-turbo"
             });
+            console.log(typeof(completion));
             github.rest.pulls.update({
               owner: owner,
               repo: repo,
               pull_number: prNumber,
-              body: completion
+              body: completion.choices[0].message
             });
