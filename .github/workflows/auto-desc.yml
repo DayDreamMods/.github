@@ -82,9 +82,7 @@ jobs:
             ℹ️ <Brief overview>
 
             ### Changes Made
-            <Insert List of Changes>
-
-            🔍 <Overarching Goal>`
+            <Insert List of Changes>`
                 },
                 {
                   role: "user",
