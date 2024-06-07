@@ -49,7 +49,7 @@ jobs:
             ${process.env.GIT_DIFF}`;
             
             core.setOutput('DIFF_TEXT', userContent);
-            console.log(github.rest.pulls.rest.pulls);
+            console.log(github);
             return;
             core.warning("Running AI!!");
 
