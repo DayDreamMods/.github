@@ -66,7 +66,8 @@ jobs:
               model: "gpt-3.5-turbo"
             });
         
-      - uses: riskledger/update-pr-description@main
+      - name: update-pull-request
+        uses: kt3k/update-pr-description@v2
         with:
-          body: ${{ steps.api-ai.outputs.DIFF_TEXT }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          pr_body: ${{ steps.api-ai.outputs.DIFF_TEXT }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
