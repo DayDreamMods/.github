@@ -22,9 +22,11 @@ jobs:
       - name: Get Github Diff
         id: myRequest
         run: |
-          echo 'GIT_DIFF<<EOF' >> $GITHUB_OUTPUT
-          curl -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' ${{ env.DIFF_URL }} >> $GITHUB_OUTPUT
-          echo 'EOF' >> $GITHUB_OUTPUT
+          {
+            echo 'GIT_DIFF<<EOF'
+            curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" ${{ env.DIFF_URL }}
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
       - name: Print Diff
         run: |
