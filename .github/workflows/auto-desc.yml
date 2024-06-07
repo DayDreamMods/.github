@@ -1,19 +1,85 @@
-name: Send request for description on PRs
+name: Auto PR Description
 
 on:
   pull_request:
     types: [opened, synchronize]
 
-env:
-  BASE_REF: ${{ github.base_ref }}
-  HEAD_REF: ${{ github.head_ref }}
-
 jobs:
   explain-diff:
+    if: github.event.pull_request.body == ''
     runs-on: ubuntu-latest
+    env:
+      DIFF_URL: ${{ github.event.pull_request.diff_url }}
     steps:
-      - name: Test
-        run: |
-          echo $BASE_REF
-          echo $HEAD_REF
-    
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: GrantBirki/git-diff-action@v2.7.0
+        id: git-diff-action
+
+      - name: Print Diff
+        env:
+          GIT_DIFF: ${{ steps.git-diff-action.outputs.raw-diff }}
+        run: echo "$GIT_DIFF"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - run: npm install openai
+
+      - name: Call OpenAI API
+        id: api-ai
+        uses: actions/github-script@v7
+        env:
+          OPENAI_API_TOKEN: ${{ secrets.OPENAI_API_TOKEN }}
+          GIT_DIFF: ${{ steps.git-diff-action.outputs.raw-diff }}
+        with:
+          script: |
+            const OpenAI = require("openai");
+            const ai = new OpenAI({
+              apiKey: process.env.OPENAI_API_TOKEN
+            });
+
+            const userContent = `Pull Request: ${{ github.event.pull_request.title }}
+            Merges: ${{ github.head_ref }} -> ${{ github.base_ref }}
+            
+            ${process.env.GIT_DIFF}`;
+            
+            core.setOutput('DIFF_TEXT', userContent);
+            const repoInfo = ('${{ github.repository }}').split('/');
+            const owner = repoInfo[0];
+            const repo = repoInfo[1];
+            const prNumber = ${{ github.event.pull_request.number }};
+            
+            core.warning("Running AI!!");
+
+            const completion = await ai.chat.completions.create({
+              messages: [
+                {
+                  role: "system",
+                  content: `You will receive the output from a 'git diff' command that is executed on a Pull Request, which you will also receive some information about prior to the diff output, and you will be writing the description for it utilizing GitHub's available markdown. Your response should mostly adhere to the following template where you fill in any text within the '<>':
+            ## Description
+
+            ℹ️ <Brief overview>
+
+            ### Changes Made
+            <Insert List of Changes>
+
+            🔍 <Overarching Goal>`
+                },
+                {
+                  role: "user",
+                  content: userContent
+                }
+              ],
+              model: "gpt-3.5-turbo"
+            });
+            github.rest.pulls.update({
+              owner: owner,
+              repo: repo,
+              pull_number: prNumber,
+              body: completion.choices[0].message.content
+            });
