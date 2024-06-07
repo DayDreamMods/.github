@@ -16,7 +16,7 @@ jobs:
 
   explain-diff:
     needs: check-desc
-    if: needs.check-desc.outputs.FILL_DIFF
+    if: needs.check-desc.outputs.FILL_DIFF == 'true'
     runs-on: ubuntu-latest
     env:
       DIFF_URL: ${{ github.event.pull_request.diff_url }}
@@ -48,7 +48,7 @@ jobs:
           script: |
             const OpenAI = require("openai");
             const ai = new OpenAI({
-              apiKey: process.env.OPENAI_API_KEY
+              apiKey: process.env.OPENAI_API_TOKEN
             });
 
             console.log(ai);
