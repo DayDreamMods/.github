@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Print User
-        run: echo ${{ github.event.pull_request.user }}
+        run: echo ${{ toJson(github.event.pull_request.user) }}
 
   explain-diff:
     if: github.event.pull_request.body == '$GPT'
