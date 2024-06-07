@@ -54,11 +54,11 @@ jobs:
             const repo = repoInfo[1];
             const prNumber = ${{ github.event.pull_request.number }};
             
-            console.log(ai);
+            console.log(ai.chat.completions.create);
             return;
             core.warning("Running AI!!");
 
-            const completion = await ai.chat.completion.create({
+            const completion = await ai.chat.completions.create({
               messages: [
                 {
                   "role": "system",
