@@ -24,7 +24,7 @@ jobs:
         run: |
           {
             echo 'GIT_DIFF<<EOF'
-            curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" ${{ env.DIFF_URL }}
+            curl -s ${{ env.DIFF_URL }}
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
 
