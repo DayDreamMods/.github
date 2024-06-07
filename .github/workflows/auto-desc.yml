@@ -5,18 +5,8 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  check-desc:
-    runs-on: ubuntu-latest
-    outputs:
-      FILL_DIFF: ${{ steps.description-check.outputs.CONTAINS_TEXT }}
-    steps:
-      - name: Description Check
-        id: description-check
-        run: echo "CONTAINS_TEXT=${{ contains(github.event.pull_request.body, '$DIFF$') }}" >> $GITHUB_OUTPUT
-
   explain-diff:
-    needs: check-desc
-    if: needs.check-desc.outputs.FILL_DIFF == 'true'
+    if: github.event.pull_request.body == ''
     runs-on: ubuntu-latest
     env:
       DIFF_URL: ${{ github.event.pull_request.diff_url }}
