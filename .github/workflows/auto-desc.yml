@@ -54,12 +54,7 @@ jobs:
             const repo = repoInfo[1];
             const prNumber = ${{ github.event.pull_request.number }};
             
-            github.rest.pulls.update({
-              owner: owner,
-              repo: repo,
-              pull_number: prNumber,
-              body: userContent
-            });
+            console.log(ai.chat.completion)
             return;
             core.warning("Running AI!!");
 
@@ -75,4 +70,10 @@ jobs:
                 }
               ],
               model: "gpt-3.5-turbo"
+            });
+            github.rest.pulls.update({
+              owner: owner,
+              repo: repo,
+              pull_number: prNumber,
+              body: completion
             });
