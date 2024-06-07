@@ -49,6 +49,7 @@ jobs:
             ${process.env.GIT_DIFF}`;
             
             core.setOutput('DIFF_TEXT', userContent);
+            console.log(github.rest.pulls);
             return;
             core.warning("Running AI!!");
 
@@ -65,9 +66,3 @@ jobs:
               ],
               model: "gpt-3.5-turbo"
             });
-        
-      - name: update-pull-request
-        uses: kt3k/update-pr-description@v2
-        with:
-          pr_body: ${{ steps.api-ai.outputs.DIFF_TEXT }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
