@@ -74,5 +74,5 @@ jobs:
               owner: owner,
               repo: repo,
               pull_number: prNumber,
-              body: completion.choices[0].message
+              body: completion.choices[0].message.content
             });
