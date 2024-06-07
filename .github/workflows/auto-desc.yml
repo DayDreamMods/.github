@@ -23,8 +23,8 @@ jobs:
         id: myRequest
         uses: fjogeleit/http-request-action@v1
         with:
-          url: "DIFF_URL"
-          
+          url: ${{ env.DIFF_URL }}
+
       - name: Print Diff
         run: |
           echo ${{ steps.myRequest.outputs.response }}
