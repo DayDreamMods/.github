@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CURRENT_USER: ${{ github.event.pull_request.user.login }}
-      USERNAME_WHITELIST: "['wwwDayDreafm']"
+      USERNAME_WHITELIST: "['wwwDayDream']"
     outputs:
       USER_ALLOWED: ${{ steps.user-check.outputs.ENV_CONTAINS }}
     steps:
