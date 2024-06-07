@@ -25,7 +25,9 @@ jobs:
         with:
           url: ${{ env.DIFF_URL }}
 
-      - name: Print Diff
+      - name: Save Diff
         run: |
-          echo "${{ fromJson(steps.myRequest.outputs.response).data }}"
+          echo "GIT_DIFF=${{ fromJson(steps.myRequest.outputs.response).data }}" >> $GITHUB_ENV
     
+      - name: Print Diff
+        run: echo "$GIT_DIFF"
