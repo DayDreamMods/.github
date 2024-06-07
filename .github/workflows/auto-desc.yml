@@ -27,4 +27,4 @@ jobs:
 
       - name: Print Diff
         run: |
-          echo "${{ fromJson(steps.myRequest.outputs.response).data }}" >> $GITHUB_ENV
+          echo "${{ fromJson(steps.myRequest.outputs.response).data }}"
