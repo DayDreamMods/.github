@@ -21,14 +21,11 @@ jobs:
 
       - name: Get Github Diff
         id: myRequest
-        run: |
-          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -s "$DIFF_URL" -o diff.txt
-          cat diff.txt
-          echo "GIT_DIFF<<EOF" >> $GITHUB_OUTPUT
-          cat diff.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+        uses: indiesdev/curl@v1.1
+        with:
+          url: ${{ env.DIFF_URL }}
 
       - name: Print Diff
         run: |
-          echo ${{ steps.myRequest.outputs.GIT_DIFF }}
+          echo ${{ steps.myRequest.outputs.response }}
     
