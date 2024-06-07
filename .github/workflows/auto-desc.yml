@@ -27,7 +27,9 @@ jobs:
 
       - name: Save Diff
         run: |
-          echo 'GIT_DIFF<<EOF${{ fromJson(steps.myRequest.outputs.response).data }}EOF' >> $GITHUB_ENV
+          echo 'GIT_DIFF<<EOF' >> $GITHUB_ENV
+          echo '${{ fromJson(steps.myRequest.outputs.response).data }}' >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
     
       - name: Print Diff
         run: echo "$GIT_DIFF"
