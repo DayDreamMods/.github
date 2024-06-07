@@ -45,7 +45,7 @@ jobs:
             const userContent = `Pull Request: ${{ github.event.pull_request.title }}
             Merges: ${{ github.base_ref }} -> ${{ github.head_ref }}
             ${process.env.GIT_DIFF}`;
-            console.log("Returning; User Message:\n");
+            console.log("Returning; User Message:\n" + userContent);
             return;
             core.warning("Running AI!!");
 
