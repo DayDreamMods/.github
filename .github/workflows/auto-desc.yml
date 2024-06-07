@@ -5,8 +5,14 @@ on:
     types: [opened, synchronize]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print User
+        run: echo ${{ github.event.pull_request.user }}
+
   explain-diff:
-    if: github.event.pull_request.body == ''
+    if: github.event.pull_request.body == '$GPT'
     runs-on: ubuntu-latest
     env:
       DIFF_URL: ${{ github.event.pull_request.diff_url }}
