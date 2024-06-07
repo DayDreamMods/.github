@@ -60,6 +60,7 @@ jobs:
               pull_number: prNumber,
               body: userContent
             });
+            return;
             core.warning("Running AI!!");
 
             const completion = await ai.chat.completion.create({
