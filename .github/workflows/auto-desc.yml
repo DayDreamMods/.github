@@ -21,12 +21,12 @@ jobs:
 
       - name: Get Github Diff
         id: myRequest
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: ${{ env.DIFF_URL }}
+        run: |
+          echo 'GIT_DIFF<<EOF' >> $GITHUB_OUTPUT
+          curl -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' ${{ env.DIFF_URL }} >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
 
       - name: Print Diff
         run: |
-          echo ${{ steps.myRequest.outputs.response }}
-          echo $DIFF
+          echo ${{ steps.myRequest.outputs.GIT_DIFF }}
     
