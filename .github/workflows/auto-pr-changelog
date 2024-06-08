@@ -1,7 +1,7 @@
 name: "[Automatic] PR Changelog"
 
 on:
-  pull_request_review_comment:
+  issue_comment:
     types: [created]
 
 jobs:
@@ -13,4 +13,5 @@ jobs:
         with:
           script: | 
             console.log('${{ github.event_name }}');
+            console.log('${{ toJson(github.issue_comment) }}');
             console.log('${{ toJson(github.event) }}');
