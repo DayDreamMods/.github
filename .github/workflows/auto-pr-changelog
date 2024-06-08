@@ -1,0 +1,21 @@
+name: "[Automatic] PR Changelog"
+
+on:
+  pull_request_review:
+    types: [submitted]
+  pull_request_target:
+    types: [opened, ready_for_review]
+
+env:
+  IS_OPENED: ${{ github.event_name == 'pull_request_target' && github.pull_request_target. }}
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Script Execution
+        uses: actions/github-script@v7
+        with:
+          script: | 
+            console.log('${{ github.event_name }}');
+            console.log('${{ toJson(github.pull_request_target) }}');
