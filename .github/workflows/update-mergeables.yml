@@ -145,5 +145,5 @@ jobs:
           token: ${{ secrets.ORG_PAT }}
           title: "Update ${{ steps.matrix-sanitation.outputs.source-branch }}@${{ steps.matrix-sanitation.outputs.source-repo }}"
           body: ""
-          branch: chore/mergeables/update/${{ steps.matrix-sanitation.outputs.source-branch }}
+          branch: changed/mergeables/version/${{ steps.matrix-sanitation.outputs.source-branch }}
           author: "RedEyeMods <redeyemodding@gmail.com>"
