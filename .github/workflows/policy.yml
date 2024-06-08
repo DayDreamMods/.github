@@ -6,7 +6,7 @@ on:
       regex:
         description: "The regex for checking branch names, probably don't change this"
         required: false
-        default: '(?:(?:(?:chore){1}|(?:docs){1}|(?:fix){1}|(?:refactor){1}|(?:feature){1}|(?:wip){1})(\/[a-z\d-]+)+|(main))$'
+        default: '(?:(?:(?:added){1}|(?:changed){1}|(?:deprecated){1}|(?:removed){1}|(?:fixed){1}|(?:secured){1})(\/[a-z\d-]+)+|(main))$'
         type: string
 
 jobs:
