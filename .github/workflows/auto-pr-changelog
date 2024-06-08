@@ -3,6 +3,8 @@ name: "[Automatic] PR Changelog"
 on:
   issue_comment:
     types: [created]
+    branches:
+      - '**'
 
 jobs:
   auto-changelog:
