@@ -21,7 +21,7 @@ jobs:
           token: ${{ github.token }}
           name: Changelog Agknowledgement
           status: 'in_progress'
-          output: "{ 'title': 'Changelog', 'summary': 'Prevents merging until changelog is omitted or included via `(-/+)changelog` as a comment.', 'text_description': 'Include or omit changelog via (-/+)changelog'}"
+          output: '{ "title": "Changelog", "summary": "Prevents merging until changelog is omitted or included via `(-/+)changelog` as a comment.", "text_description": "Include or omit changelog via (-/+)changelog" }'
       
       - name: Save CheckID
         run: |
@@ -29,6 +29,7 @@ jobs:
           echo '$STATE_STATUS_CHECKID'
 
   auto-changelog:
+    if: ${{ github.event_name == 'issue_comment' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
