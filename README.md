@@ -1,4 +1,4 @@
-This repository contains (most) of the reusable workflows under the `feature/reusable-workflows` branch and utility mergeable branches under `mergeable/*`.
+This repository contains of the reusable workflows under the `feature/reusable-workflows` branch and utility mergeable branches under `mergeable/*`.
 
 These 'mergeable' features are available through an automatic install (and update) workflow via this repository (or any repo with the manuals as they can run on remote and local) `mergeable/manual-workflows` under the actions tab.
 
