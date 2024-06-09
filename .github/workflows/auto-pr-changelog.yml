@@ -16,6 +16,196 @@ jobs:
           fetch-depth: 0
           filter: tree:0
 
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+        
+      - name: Reset Changelog
+        continue-on-error: true
+        run: |
+          git checkout ${{ github.ref_name }} -- ./README.md 
+      
+      - name: CHANGELOG Setup
+        if: ${{ contains(github.event.comment.body, '+changelog') }}
+        uses: actions/github-script@v7
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        with:
+          script: |
+            const fs = require('fs');
+            const filePath = 'CHANGELOG.md';
+            const headRef = process.env.HEAD_REF;
+
+            Array.prototype.insert = function ( index, ...items ) {
+                this.splice( index, 0, ...items );
+            };
+
+            class MarkdownHead {
+                constructor(level = 0, parent = null) {
+                    this.level = level;
+                    this.children = [];
+                    if (parent != null && parent.children != null)
+                        parent.children.push(this);
+                }
+                
+                findOrCreateChildHead(firstLineContains, template) {
+                    for (var idx = 0; idx < this.children.length; idx++) {
+                        var cur = this.children[idx];
+                        if (typeof(cur) == typeof('') || cur.children == null) continue;
+                        if (cur.children.length > 0 && cur.children[0].toLowerCase().includes(firstLineContains.toLowerCase())) {
+                            return cur;
+                        }
+                    }
+                    
+                    var newHead = new MarkdownHead(this.level + 1, this);
+                    if (template != null)
+                        newHead.children = template.split('\n');
+                    else
+                        newHead.children = [ '#'.repeat(newHead.level) + ' ' + firstLineContains ];
+                    return newHead;
+                }
+                
+                cleanup() {
+                    while (this.children.length > 0 && typeof(this.children[this.children.length - 1]) == typeof('') && this.children[this.children.length - 1].replace(' ', '') == '') 
+                        this.children.pop();
+                    while (this.children.length > 0 && typeof(this.children[0]) == typeof('') && this.children[0].replace(' ', '') == '')
+                        this.children.remove(0);
+                }
+                
+                parse(markdown) {
+                    var inChild = false;
+                    const markdownSplit = markdown.split('\n');
+                    const headStack = [ this ];
+                    for (var idx = 0; idx < markdownSplit.length; idx++) {
+                        const currentLine = markdownSplit[idx];
+                        const match = currentLine.match(/^(#+).*$/)
+                        
+                        const matchLevel = match != null ? match[1].length : -1;
+                        var newHead;
+                        
+                        // Handle all head changes
+                        if (match && matchLevel > headStack[headStack.length - 1].level) {
+                            newHead = new MarkdownHead(matchLevel, headStack[headStack.length - 1]);
+                            headStack.push(newHead);
+                        } else if (match && matchLevel == headStack[headStack.length - 1].level) {
+                            headStack.pop().cleanup();
+                            newHead = new MarkdownHead(matchLevel, headStack[headStack.length - 1]);
+                            headStack.push(newHead);
+                        } else if (match && matchLevel < headStack[headStack.length - 1].level) {
+                            while (matchLevel <= headStack[headStack.length - 1].level) {
+                                headStack.pop().cleanup();
+                            }
+                            newHead = new MarkdownHead(matchLevel, headStack[headStack.length - 1]);
+                            headStack.push(newHead);
+                        }
+                        
+                        const currentHead = headStack[headStack.length - 1];
+                        
+                        currentHead.children.push(currentLine);
+                    }
+                    
+                    this.cleanup();
+                }
+                
+                toString() {
+                    var curString = "";
+                    for (var idx = 0; idx < this.children.length; idx++) {
+                        const curElem = this.children[idx];
+                        if (typeof(curElem) == typeof(""))
+                            curString += `${curElem}\n`;
+                        else {
+                            if (curElem.children.length <= 1)
+                                continue; // Skip empty sections
+                            
+                            if (curElem.children.length > 1 && curElem.children[1] != "")
+                                curElem.children.insert(1, "");
+                            if (curElem.children.length > 0 && curElem.children[0] != "" && 
+                                curString.length > 0 && !curString.endsWith('\n\n'))
+                                curElem.children.insert(0, "");
+                            curString += curElem.toString();
+                        }
+                    }
+                    return curString;
+                }
+            }
+
+            const DefaultChangelog = `# Changelog
+
+            All notable changes to this project will be documented in this file.
+
+            The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+            and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).`;
+
+            // Check if the file exists and read its content if it does
+            let fileContent = '';
+            if (fs.existsSync(filePath)) {
+              fileContent = fs.readFileSync(filePath, 'utf8');
+            }
+
+            const masterHead = new MarkdownHead();
+            masterHead.parse(fileContent);
+
+            (() => { // 
+
+                masterHead.changelog = masterHead.findOrCreateChildHead("Changelog", DefaultChangelog);
+                masterHead.changelog.unreleased = masterHead.changelog.findOrCreateChildHead("[Unreleased]");
+                
+                masterHead.changelog.unreleased.added = 
+                    masterHead.changelog.unreleased.findOrCreateChildHead("Added");
+                masterHead.changelog.unreleased.changed = 
+                    masterHead.changelog.unreleased.findOrCreateChildHead("Changed");
+                masterHead.changelog.unreleased.deprecated = 
+                    masterHead.changelog.unreleased.findOrCreateChildHead("Deprecated");
+                masterHead.changelog.unreleased.removed = 
+                    masterHead.changelog.unreleased.findOrCreateChildHead("Removed");
+                masterHead.changelog.unreleased.fixed = 
+                    masterHead.changelog.unreleased.findOrCreateChildHead("Fixed");
+                masterHead.changelog.unreleased.secured = 
+                    masterHead.changelog.unreleased.findOrCreateChildHead("Secured");
+                
+            })();
+
+            console.log(headRef);
+            var category = headRef.split('/')[0];
+            var potentialHead = masterHead.changelog.unreleased[category];
+            if (potentialHead != null) {
+              potentialHead.children.push('- ' + process.env.ISSUE_TITLE);
+            }
+            
+            fs.writeFileSync(filePath, masterHead.toString());
+
+            console.log("-=-=-=-=-\nWhat we have exported...");
+            console.log(masterHead.toString());
+
       - run: |
-          echo '${{ github.head_ref }}'
-          echo '${{ github.ref_name }}'
+          git add .
+          git commit -am "Updated README.md"
+            
+      - name: PR Check
+        id: pr-check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const execSync = require('child_process').execSync;
+            const branchStatus = execSync('git status -sb').toString();
+            const result = branchStatus.match(/^##\s*([\w\d-_/\\]+)\.\.\.([\w\d-_/\\]+)/)
+            if (!result)
+              throw new Exception("Weird");
+
+            const currentBranch = result[1];
+            const trackingBranch = result[2];
+            const diff = execSync(`git diff ${currentBranch} ${trackingBranch}`).toString();
+            core.setOutput('push-needed', diff != "" ? 'true' : 'false');
+            console.log(currentBranch);
+            console.log(trackingBranch);
+            console.log(diff);
+
+      - name: Push Changes
+        if: steps.pr-check.outputs.push-needed == 'true'
+        run: |
+          git push
