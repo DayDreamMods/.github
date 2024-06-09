@@ -12,17 +12,17 @@ And clicking the `Run Workflow` button and entering your repo information to ins
 
 ### Alternative Local Solution
 
-First add a new remote named `something`:
+First add a new remote named `remote`:
 
-`git remote add something https://github.com/RedEyeMods/.github.git`
+`git remote add remote https://github.com/RedEyeMods/.github.git`
 
 and fetching it:
 
-`git fetch something`
+`git fetch remote`
 
 Mergeable branches can be force merged initially into repos by adding a remote and then merging of `something/mergeable/xyz` with `--allow-unrelated-histories`. Further merges need no extra tag since the history is now related.
 
-`git merge something/mergeable/xyz [--allow-unrelated-histories]`
+`git merge remote/mergeable/xyz [--allow-unrelated-histories]`
 
 The below workflow mergeables are working and in use frequently:
 
