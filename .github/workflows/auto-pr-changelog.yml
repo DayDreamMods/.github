@@ -1,15 +1,48 @@
 name: "[Automatic] PR Changelog"
 
 on:
+  pull_request:
+    types: [opened]
   issue_comment:
     types: [created]
 
 jobs:
+  set-wait-status:
+    name: Force Agknowledge Changelog
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set Wait Status
+        id: wait-status
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          token: ${{ github.token }}
+          name: Changelog Agknowledgement
+          status: 'in_progress'
+          output: "{ 'title': 'Changelog', 'summary': 'Prevents merging until changelog is omitted or included via `(-/+)changelog` as a comment.', 'text_description': 'Include or omit changelog via (-/+)changelog'}"
+      
+      - name: Save CheckID
+        run: |
+          echo "STATUS_CHECKID=${{ steps.wait-status.outputs.check_id }}" >> "$GITHUB_STATE"
+          echo '$STATE_STATUS_CHECKID'
+
   auto-changelog:
     runs-on: ubuntu-latest
     steps:
-      - name: Script Execution
-        uses: actions/github-script@v7
+      - uses: actions/checkout@v4
+
+      - run: |
+          echo '$STATE_STATUS_CHECKID'
+          echo '${{ env.STATE_STATUS_CHECKID }}'
+
+      - name: Set Wait Status
+        id: wait-status
+        uses: LouisBrunner/checks-action@v2.0.0
         with:
-          script: | 
-            console.log(JSON.stringify(context));
+          token: ${{ github.token }}
+          name: Changelog Agknowledgement
+          status: 'completed'
+          conclusion: 'success'
+          check_id: ${{ env.STATE_STATUS_CHECKID }}
