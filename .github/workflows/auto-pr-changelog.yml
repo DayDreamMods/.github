@@ -1,15 +1,51 @@
-name: "[Automatic] PR Changelog"
+name: "Auto Changelog"
 
 on:
+  pull_request:
+    types: [opened]
   issue_comment:
     types: [created]
 
 jobs:
-  auto-changelog:
+  set-wait-status:
+    name: Require Engagement
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Script Execution
-        uses: actions/github-script@v7
+      - uses: actions/checkout@v4
+
+      - name: Set Wait Status
+        id: wait-status
+        uses: LouisBrunner/checks-action@v2.0.0
         with:
-          script: | 
-            console.log(JSON.stringify(context));
+          token: ${{ github.token }}
+          name: Engagement
+          status: 'in_progress'
+          output: '{ "title": "Engagement", "summary": "Prevents merging until changelog is omitted or included via `(-/+)changelog` as a comment.", "text_description": "Include or omit changelog via a `(-/+)changelog` comment." }'
+      
+      - name: Save CheckID
+        run: |
+          echo "STATUS_CHECKID=${{ steps.wait-status.outputs.check_id }}" >> "$GITHUB_STATE"
+          echo '${{ env.STATE_STATUS_CHECKID }}'
+
+  auto-changelog:
+    if: ${{ github.event_name == 'issue_comment' }}
+    env: 
+      COMMENT_BODY: ${{ github.event.comment.body }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          echo '$STATE_STATUS_CHECKID'
+          echo '${{ env.STATE_STATUS_CHECKID }}'
+
+      - name: Set Wait Status
+        id: wait-status
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          token: ${{ github.token }}
+          name: Changelog Agknowledgement
+          status: 'completed'
+          conclusion: 'success'
+          check_id: ${{ env.STATE_STATUS_CHECKID }}
