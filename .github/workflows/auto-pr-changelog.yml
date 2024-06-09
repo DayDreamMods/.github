@@ -1,4 +1,4 @@
-name: "[Automatic] PR Changelog"
+name: "Auto Changelog"
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   set-wait-status:
-    name: Force Agknowledge Changelog
+    name: Require Engagement
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
@@ -19,17 +19,19 @@ jobs:
         uses: LouisBrunner/checks-action@v2.0.0
         with:
           token: ${{ github.token }}
-          name: Changelog Agknowledgement
+          name: Engagement
           status: 'in_progress'
-          output: '{ "title": "Changelog", "summary": "Prevents merging until changelog is omitted or included via `(-/+)changelog` as a comment.", "text_description": "Include or omit changelog via (-/+)changelog" }'
+          output: '{ "title": "Engagement", "summary": "Prevents merging until changelog is omitted or included via `(-/+)changelog` as a comment.", "text_description": "Include or omit changelog via a `(-/+)changelog` comment." }'
       
       - name: Save CheckID
         run: |
           echo "STATUS_CHECKID=${{ steps.wait-status.outputs.check_id }}" >> "$GITHUB_STATE"
-          echo '$STATE_STATUS_CHECKID'
+          echo '${{ env.STATE_STATUS_CHECKID }}'
 
   auto-changelog:
     if: ${{ github.event_name == 'issue_comment' }}
+    env: 
+      COMMENT_BODY: ${{ github.event.comment.body }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
