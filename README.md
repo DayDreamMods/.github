@@ -1,6 +1,6 @@
-This repository contains (most) of the reusable workflows under the `feature/reusable-workflows` branch and utility mergeable branches under `feature/mergeable/*`.
+This repository contains (most) of the reusable workflows under the `feature/reusable-workflows` branch and utility mergeable branches under `mergeable/*`.
 
-These 'mergeable' features are available through an automatic install (and update) workflow via this repository (or any repo with the manuals as they can run on remote and local) `feature/mergeable/manual-workflows` under the actions tab.
+These 'mergeable' features are available through an automatic install (and update) workflow via this repository (or any repo with the manuals as they can run on remote and local) `mergeable/manual-workflows` under the actions tab.
 
 ![image](https://github.com/RedEyeMods/.github/assets/13383838/4e45389e-58cf-4c89-8a5f-84fe24495542)
 
@@ -20,20 +20,20 @@ and fetching it:
 
 `git fetch something`
 
-Mergeable branches can be force merged initially into repos by adding a remote and then merging of `something/feature/mergeable/xyz` with `--allow-unrelated-histories`. Further merges need no extra tag since the history is now related.
+Mergeable branches can be force merged initially into repos by adding a remote and then merging of `something/mergeable/xyz` with `--allow-unrelated-histories`. Further merges need no extra tag since the history is now related.
 
-`git merge something/feature/mergeable/xyz [--allow-unrelated-histories]`
+`git merge something/mergeable/xyz [--allow-unrelated-histories]`
 
 The below workflow mergeables are working and in use frequently:
 
-- `feature/mergeable/auto-label-pr` - Automatically label pull requests for changelog generation.
-- `feature/mergeable/code-owners` - Organization Code Ownership for pull requestion approvals/
-- `feature/mergeable/issue-templates` - Organization wide template forms.
-- `feature/mergeable/policy` - Organization wide policies.
-- `feature/mergeable/gitignore` - Global GITIGNORE.
-- `feature/mergeable/license` - Global LICENSE. (LGPL 2.1)
-- `feature/mergeable/manual-workflows` - Manual workflows for advannced project setup.
-- `feature/mergeable/init` - Initialization script for rulesets.
-- `feature/mergeable/auto-desc` - OpenAI diff summarization for pull request descriptions.
+- `mergeable/auto-label-pr` - Automatically label pull requests for changelog generation.
+- `mergeable/code-owners` - Organization Code Ownership for pull requestion approvals/
+- `mergeable/issue-templates` - Organization wide template forms.
+- `mergeable/policy` - Organization wide policies.
+- `mergeable/gitignore` - Global GITIGNORE.
+- `mergeable/license` - Global LICENSE. (LGPL 2.1)
+- `mergeable/manual-workflows` - Manual workflows for advannced project setup.
+- `mergeable/init` - Initialization script for rulesets.
+- `mergeable/auto-desc` - OpenAI diff summarization for pull request descriptions.
   - 🚧 Reserved for select users 🚧
-- `feature/mergeable/code-of-conduct` - Contains community ruleset, automatically inherited in the RedEyeMods organization
+- `mergeable/code-of-conduct` - Contains community ruleset, automatically inherited in the RedEyeMods organization
