@@ -12,6 +12,11 @@ jobs:
     if: ${{ contains(github.event.pull_request.body, '+changelog') || contains(github.event.pull_request.body, '-changelog') }}
     runs-on: ubuntu-latest
     steps:
+      - run: |
+          echo '${{ github.head_ref }}'
+          echo '${{ github.ref_name }}'
+          echo '${{ github.base_ref }}'
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
