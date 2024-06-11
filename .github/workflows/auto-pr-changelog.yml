@@ -41,7 +41,7 @@ jobs:
           git checkout ${{ github.base_ref }} -- CHANGELOG.md 
       
       - name: CHANGELOG Setup
-        if: ${{ env.LABEL_ADDED }}
+        if: ${{ env.LABEL_ADDED == 'true' }}
         uses: actions/github-script@v7
         env:
           HEAD_REF: ${{ github.head_ref }}
