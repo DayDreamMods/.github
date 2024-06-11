@@ -10,3 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update mergeable/auto-changelog@RedEyeMods/.github
+
+### Removed
+
+- Unused auto-label .mergeable
