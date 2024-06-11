@@ -2,16 +2,17 @@ name: "Auto Changelog"
 
 on:
   pull_request:
-    types: [opened, edited]
+    types: [labeled]
 
 jobs:
   auto-changelog:
     env: 
-      PR_BODY: ${{ github.event.pull_request.body }}
+      PR_LABELED: ${{ github.event.pull_request.labels }}
       PR_TITLE: ${{ github.event.pull_request.title }}
     if: ${{ contains(github.event.pull_request.body, '+changelog') || contains(github.event.pull_request.body, '-changelog') }}
     runs-on: ubuntu-latest
     steps:
+      - run: echo '${{ github.event.pull_request.labels }}'
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
