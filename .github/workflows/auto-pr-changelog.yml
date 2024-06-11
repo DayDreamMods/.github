@@ -12,13 +12,9 @@ jobs:
     if: ${{ contains(github.event.pull_request.body, '+changelog') || contains(github.event.pull_request.body, '-changelog') }}
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo '${{ github.head_ref }}'
-          echo '${{ github.ref_name }}'
-          echo '${{ github.base_ref }}'
-
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
           filter: tree:0
 
@@ -33,7 +29,7 @@ jobs:
       - name: Reset Changelog
         continue-on-error: true
         run: |
-          git checkout ${{ github.ref_name }} -- ./README.md 
+          git checkout ${{ github.base_ref }} -- ./README.md 
       
       - name: CHANGELOG Setup
         if: ${{ contains(github.event.comment.body, '+changelog') }}
