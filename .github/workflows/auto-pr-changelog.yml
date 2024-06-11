@@ -12,6 +12,11 @@ jobs:
     if: ${{ contains(github.event.pull_request.body, '+changelog') || contains(github.event.pull_request.body, '-changelog') }}
     runs-on: ubuntu-latest
     steps:
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
