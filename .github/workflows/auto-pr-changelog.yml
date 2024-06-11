@@ -32,11 +32,11 @@ jobs:
           git checkout ${{ github.base_ref }} -- ./README.md 
       
       - name: CHANGELOG Setup
-        if: ${{ contains(github.event.comment.body, '+changelog') }}
+        if: ${{ contains(github.event.pull_request.body, '+changelog') }}
         uses: actions/github-script@v7
         env:
           HEAD_REF: ${{ github.head_ref }}
-          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_TITLE: ${{ env.PR_TITLE }}
         with:
           script: |
             const fs = require('fs');
