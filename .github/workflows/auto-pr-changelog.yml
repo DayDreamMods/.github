@@ -33,7 +33,7 @@ jobs:
       - name: Reset Changelog
         continue-on-error: true
         run: |
-          git checkout ${{ github.base_ref }} -- ./README.md 
+          git checkout ${{ github.base_ref }} -- ./CHANGELOG.md 
       
       - name: CHANGELOG Setup
         if: ${{ contains(github.event.pull_request.body, '+changelog') }}
