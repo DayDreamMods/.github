@@ -17,6 +17,7 @@ jobs:
           CUR_REPO: ${{ github.repository }}
           TARGET_REPO: RedEyeMods/.github
         with:
+          token: ${{ secrets.ORG_PAT }}
           script: |
             async function main() {
               const [currentOwner, currentRepo] = process.env.CUR_REPO.split('/');
