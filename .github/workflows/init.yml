@@ -18,7 +18,7 @@ jobs:
           TARGET_REPO: RedEyeMods/.github
         with:
           script: |
-            async function copyRulesets() {
+            async function main() {
               const [currentOwner, currentRepo] = process.env.CUR_REPO.split('/');
               const [targetOwner, targetRepo] = process.env.TARGET_REPO.split('/');
 
