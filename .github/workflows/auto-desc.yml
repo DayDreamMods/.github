@@ -3,6 +3,8 @@ name: Auto PR Description
 on:
   pull_request:
     types: [opened, edited, synchronize]
+    branches:
+      - '**'
 
 jobs:
   username-whitelist:
