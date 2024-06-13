@@ -86,7 +86,7 @@ jobs:
                 const curLabelIdx = currentLabels.data.findIndex(lbl => lbl.name == label.name);
                 if (curLabelIdx >= 0) {
                   await github.rest.issues.deleteLabel({
-                    owner: currentOwner, repo: currentRepo, name: currentLabels[curLabelIdx].name
+                    owner: currentOwner, repo: currentRepo, name: currentLabels[curLabelIdx].data.name
                   });
                 } 
 
