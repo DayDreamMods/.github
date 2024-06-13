@@ -32,7 +32,7 @@ jobs:
               });
               
               for (const rulesetRef of copyRulesets.data) {
-                const isOn = rulesetRef.name.includes("[ONN]");
+                var isOn = rulesetRef.name.includes("[ONN]");
                 if (!isOn && !rulesetRef.name.includes("[OFF]")) continue;
                 const newName = rulesetRef.name.replace("[OFF]", "[ONN]").replace("[ONN]", "[WF]");
 
@@ -42,6 +42,7 @@ jobs:
 
                 const existingIdx = curRulesets.data.findIndex(rs => rs.name == newName);
                 if (existingIdx >= 0) {
+                  isOn = fullRuleset.enforcement == 'active';
                   await github.rest.repos.deleteRepoRuleset({
                     owner: currentOwner, repo: currentRepo, ruleset_id: curRulesets.data[existingIdx].id
                   });
