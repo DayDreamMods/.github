@@ -4,6 +4,16 @@ on:
   pull_request:
 
 jobs:
-  org-policy:
-    name: Organization Policy
-    uses: RedEyeMods/.github/.github/workflows/policy.yml@feature/reusable-workflows
+  branch-naming-policy:
+    name: Branch Name
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Branch Naming Policy Action
+        uses: nicklegan/github-repo-branch-naming-policy-action@v1.1.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          regex: '(?:(?:(?:added){1}|(?:changed){1}|(?:deprecated){1}|(?:removed){1}|(?:fixed){1}|(?:secured){1})(\/[a-z\d-]+)+|(main)|(mergeable\/[a-z\d-]+))$'
