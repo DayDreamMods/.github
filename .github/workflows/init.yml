@@ -9,9 +9,59 @@ on:
 jobs:
   run-init:
     name: Initial Repository Setup
-    uses: RedEyeMods/.github/.github/workflows/init.yml@feature/reusable-workflows
-    secrets:
-      org_pat: ${{ secrets.ORG_PAT }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: copy Rulesets
+        uses: actions/github-script@v7
+        env:
+          CUR_REPO: ${{ github.repository }}
+          TARGET_REPO: RedEyeMods/.github
+        with:
+          script: |
+            async function copyRulesets() {
+              const [currentOwner, currentRepo] = process.env.CUR_REPO.split('/');
+              const [targetOwner, targetRepo] = process.env.TARGET_REPO.split('/');
+
+              const copyRulesets = await github.rest.repos.getRepoRulesets({
+                owner: targetOwner, repo: targetRepo
+              });
+              
+              const curRulesets = await github.rest.repos.getRepoRulesets({
+                owner: currentOwner, repo: currentRepo
+              });
+              
+              for (const rulesetRef of copyRulesets.data) {
+                const isOn = rulesetRef.name.includes("[ONN]");
+                if (!isOn && !rulesetRef.name.includes("[OFF]")) continue;
+                const newName = rulesetRef.name.replace("[OFF]", "[ONN]").replace("[ONN]", "[WF]");
+
+                const fullRuleset = await github.rest.repos.getRepoRuleset({
+                  owner: targetOwner, repo: targetRepo, ruleset_id: rulesetRef.id
+                });
+
+                const existingIdx = curRulesets.data.findIndex(rs => rs.name == newName);
+                if (existingIdx >= 0) {
+                  await github.rest.repos.deleteRepoRuleset({
+                    owner: currentOwner, repo: currentRepo, ruleset_id: curRulesets[existingIdx].id
+                  });
+                }
+
+                await github.rest.repos.createRepoRuleset({
+                  owner: currentOwner, repo: currentRepo,
+                  name: newName,
+                  enforcement: isOn ? 'active' : 'disabled',
+                  bypass_actors: fullRuleset.data.bypass_actors,
+                  rules: fullRuleset.data.rules,
+                  conditions: fullRuleset.data.conditions
+                });
+              }
+            }
+
+            main().catch(error => {
+                console.error(error);
+                process.exit(1);
+            });
+            
   one-time:
     name: Execute One Time
     runs-on: ubuntu-latest
