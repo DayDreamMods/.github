@@ -2,6 +2,8 @@ name: Repo Policy
 
 on:
   pull_request:
+    branches:
+      - '**'
 
 jobs:
   branch-naming-policy:
