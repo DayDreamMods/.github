@@ -1,0 +1,82 @@
+name: "Auto Changelog"
+
+on:
+  push:
+    branches:
+      - "***"
+
+jobs:
+  dotnet-build:
+    runs-on: ubuntu-latest
+    outputs:
+      ARTIFACTS_PRESENT: ${{ steps.matrix-extraction.outputs.ARTIFACTS_PRESENT }}
+      ARTIFACTS: ${{ steps.matrix-extraction.outputs.ARTIFACTS }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+          submodules: recursive
+
+      - name: Setup .NET Env
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.203"
+
+      - run: |
+          dotnet pack --Configuration Release
+
+      - name: Extract Artifact Matrix
+        id: matrix-extraction
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const filePath = 'dist/ARTIFACTS.txt';
+
+            const artifacts = [];
+            let fileContent = '';
+            if (fs.existsSync(filePath)) {
+              fileContent = fs.readFileSync(filePath, 'utf8');
+            }
+
+            core.setOutput('ARTIFACTS_PRESENT', fileContent.length > 0);
+
+            const fileContentSplit = fileContent.split('\n');
+            for (var idx = 0; idx < fileContentSplit.length; idx++) {
+              const fileToPath = fileContentSplit[idx].split('=');
+              if (fileToPath.legnth <= 1) continue;
+
+              const artifactName = fileToPath[0];
+              const artifactRelPath = fileToPath[1];
+
+              if (!fs.existsSync(artifactRelPath)) continue;
+              artifacts.push({ name: artifactName, path: artifactRelPath });
+            }
+
+            core.setOutput('ARTIFACTS', JSON.stringify(artifacts))
+
+      - name: Upload Matrix Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: matrix
+          path: dist/
+
+  matrix-upload:
+    needs: dotnet-build
+    if: needs.dotnet-build.outputs.ARTIFACTS_PRESENT
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ARTIFACT: ${{ fromJson(needs.dotnet-build.outputs.ARTIFACTS) }}
+    steps:
+      - name: Download Dist Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: matrix
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.ARTIFACT.name }}
+          path: dist/${{ matrix.ARTIFACT.path }}
