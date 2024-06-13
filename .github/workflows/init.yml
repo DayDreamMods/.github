@@ -43,7 +43,7 @@ jobs:
                 const existingIdx = curRulesets.data.findIndex(rs => rs.name == newName);
                 if (existingIdx >= 0) {
                   await github.rest.repos.deleteRepoRuleset({
-                    owner: currentOwner, repo: currentRepo, ruleset_id: curRulesets[existingIdx].data.id
+                    owner: currentOwner, repo: currentRepo, ruleset_id: curRulesets.data[existingIdx].id
                   });
                 }
 
@@ -86,7 +86,7 @@ jobs:
                 const curLabelIdx = currentLabels.data.findIndex(lbl => lbl.name == label.name);
                 if (curLabelIdx >= 0) {
                   await github.rest.issues.deleteLabel({
-                    owner: currentOwner, repo: currentRepo, name: currentLabels[curLabelIdx].data.name
+                    owner: currentOwner, repo: currentRepo, name: currentLabels.data[curLabelIdx].name
                   });
                 } 
 
