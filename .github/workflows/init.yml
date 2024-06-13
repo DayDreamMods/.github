@@ -9,9 +9,133 @@ on:
 jobs:
   run-init:
     name: Initial Repository Setup
-    uses: RedEyeMods/.github/.github/workflows/init.yml@feature/reusable-workflows
-    secrets:
-      org_pat: ${{ secrets.ORG_PAT }}
+    runs-on: ubuntu-latest
+    env:
+      CUR_REPO: ${{ github.repository }}
+      TARGET_REPO: RedEyeMods/.github
+    steps:
+      - name: Copy Rulesets
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ORG_PAT }}
+          script: |
+            async function main() {
+              const [currentOwner, currentRepo] = process.env.CUR_REPO.split('/');
+              const [targetOwner, targetRepo] = process.env.TARGET_REPO.split('/');
+
+              const copyRulesets = await github.rest.repos.getRepoRulesets({
+                owner: targetOwner, repo: targetRepo
+              });
+              
+              const curRulesets = await github.rest.repos.getRepoRulesets({
+                owner: currentOwner, repo: currentRepo
+              });
+              
+              for (const rulesetRef of copyRulesets.data) {
+                var isOn = rulesetRef.name.includes("[ONN]");
+                if (!isOn && !rulesetRef.name.includes("[OFF]")) continue;
+                const newName = rulesetRef.name.replace("[OFF]", "[ONN]").replace("[ONN]", "[WF]");
+
+                const fullRuleset = await github.rest.repos.getRepoRuleset({
+                  owner: targetOwner, repo: targetRepo, ruleset_id: rulesetRef.id
+                });
+
+                const existingIdx = curRulesets.data.findIndex(rs => rs.name == newName);
+                if (existingIdx >= 0) {
+                  isOn = fullRuleset.enforcement == 'active';
+                  await github.rest.repos.deleteRepoRuleset({
+                    owner: currentOwner, repo: currentRepo, ruleset_id: curRulesets.data[existingIdx].id
+                  });
+                }
+
+                await github.rest.repos.createRepoRuleset({
+                  owner: currentOwner, repo: currentRepo,
+                  name: newName,
+                  enforcement: isOn ? 'active' : 'disabled',
+                  bypass_actors: fullRuleset.data.bypass_actors,
+                  rules: fullRuleset.data.rules,
+                  conditions: fullRuleset.data.conditions
+                });
+              }
+            }
+
+            main().catch(error => {
+                console.error(error);
+                process.exit(1);
+            });
+            
+      - name: Copy Labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ORG_PAT }}
+          script: |
+            async function main() {
+              const [currentOwner, currentRepo] = process.env.CUR_REPO.split('/');
+              const [targetOwner, targetRepo] = process.env.TARGET_REPO.split('/');
+
+              const copyLabels = await github.rest.issues.listLabelsForRepo({
+                owner: targetOwner, repo: targetRepo
+              });
+              const currentLabels = await github.rest.issues.listLabelsForRepo({
+                owner: currentOwner, repo: currentRepo
+              });
+
+              for (const label of copyLabels.data) {
+                const curLabelIdx = currentLabels.data.findIndex(lbl => lbl.name == label.name);
+                if (curLabelIdx >= 0) {
+                  await github.rest.issues.deleteLabel({
+                    owner: currentOwner, repo: currentRepo, name: currentLabels.data[curLabelIdx].name
+                  });
+                } 
+
+                await github.rest.issues.createLabel({
+                  owner: currentOwner, repo: currentRepo, 
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+              }
+            }
+
+            main().catch(error => {
+              console.error(error);
+              process.exit(1);
+            });
+            
+      - name: Copy Misc Settings
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ORG_PAT }}
+          script: |
+            async function main() {
+              const [currentOwner, currentRepo] = process.env.CUR_REPO.split('/');
+              const [targetOwner, targetRepo] = process.env.TARGET_REPO.split('/');
+
+              const defProtRules = await github.rest.repos.get({
+                owner: targetOwner, repo: targetRepo
+              });
+          
+              await github.rest.repos.update({
+                owner: currentOwner, repo: currentRepo, 
+                allow_squash_merge: defProtRules.data.allow_squash_merge,
+                allow_merge_commit: defProtRules.data.allow_merge_commit,
+                allow_rebase_merge: defProtRules.data.allow_rebase_merge,
+                allow_auto_merge: defProtRules.data.allow_auto_merge,
+                delete_branch_on_merge: defProtRules.data.delete_branch_on_merge,
+                allow_update_branch: defProtRules.data.allow_update_branch,
+                use_squash_pr_title_as_default: defProtRules.data.use_squash_pr_title_as_default,
+                squash_merge_commit_message: defProtRules.data.squash_merge_commit_message,
+                squash_merge_commit_title: defProtRules.data.squash_merge_commit_title,
+                merge_commit_message: defProtRules.data.merge_commit_message,
+                merge_commit_title: defProtRules.data.merge_commit_title
+              })
+            }
+
+            main().catch(error => {
+              console.error(error);
+              process.exit(1);
+            });
+            
   one-time:
     name: Execute One Time
     runs-on: ubuntu-latest
