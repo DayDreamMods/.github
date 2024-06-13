@@ -43,7 +43,7 @@ jobs:
                 const existingIdx = curRulesets.data.findIndex(rs => rs.name == newName);
                 if (existingIdx >= 0) {
                   await github.rest.repos.deleteRepoRuleset({
-                    owner: currentOwner, repo: currentRepo, ruleset_id: curRulesets[existingIdx].id
+                    owner: currentOwner, repo: currentRepo, ruleset_id: curRulesets[existingIdx].data.id
                   });
                 }
 
