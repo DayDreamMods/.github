@@ -205,6 +205,7 @@ jobs:
           script: |
             const execSync = require('child_process').execSync;
             const branchStatus = execSync('git status -sb').toString();
+            console.log(branchStatus);
             const result = branchStatus.match(/^##\s*([\w\d-_/\\]+)\.\.\.([\w\d-_/\\]+)/)
             if (!result)
               throw new Exception("Weird");
