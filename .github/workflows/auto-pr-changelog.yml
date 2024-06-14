@@ -226,6 +226,7 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.ORG_PAT }}
+          base: ${{ github.event.repository.default_branch }}
           title: "Update CHANGELOG.md"
           body: ""
           branch: added/changelog-entry
