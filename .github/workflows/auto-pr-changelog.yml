@@ -16,7 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: added/changelog-entry
+          ref: ${{ github.event.repository.default_branch }}
+      
+      - continue-on-error: true
+        run: |
+          git branch added/changelog-entry
+
+      - run: |
+          git checkout added/changelog-entry
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
