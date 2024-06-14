@@ -18,12 +18,8 @@ jobs:
         with:
           ref: ${{ github.event.repository.default_branch }}
       
-      - continue-on-error: true
-        run: |
-          git branch added/changelog-entry
-
       - run: |
-          git checkout added/changelog-entry
+          git checkout added/changelog-entry -- CHANGELOG.md 
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
@@ -198,35 +194,10 @@ jobs:
           git add .
           git commit -am "Updated CHANGELOG.md"
             
-      - name: PR Check
-        id: pr-check
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const execSync = require('child_process').execSync;
-            const branchStatus = execSync('git status -sb').toString();
-            console.log(branchStatus);
-            const result = branchStatus.match(/^##\s*([\w\d-_/\\]+)\.\.\.([\w\d-_/\\]+)/)
-            if (!result)
-            {
-              core.setOutput('pr-needed', 'true');
-              return;
-            }
-
-            const currentBranch = result[1];
-            const trackingBranch = result[2];
-            const diff = execSync(`git diff ${currentBranch} ${trackingBranch}`).toString();
-            core.setOutput('pr-needed', diff != "" ? 'true' : 'false');
-            console.log(currentBranch);
-            console.log(trackingBranch);
-            console.log(diff);
-
       - name: Create Pull Request
-        if: steps.pr-check.outputs.pr-needed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.ORG_PAT }}
-          base: ${{ github.event.repository.default_branch }}
           title: "Update CHANGELOG.md"
           body: ""
           branch: added/changelog-entry
