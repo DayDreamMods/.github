@@ -182,7 +182,7 @@ jobs:
                 potentialHead.children.push(potentialEntry);
               }
             } else {
-              const potentialEntryIdx = potentialHead.findIndex(item => typeof(item) == typeof('') && item == potentialEntry);
+              const potentialEntryIdx = potentialHead.children.findIndex(item => typeof(item) == typeof('') && item == potentialEntry);
               if (potentialEntryIdx >= 0) {
                 potentialHead.children.splice(potentialEntryidx, 1)
               }
