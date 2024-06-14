@@ -208,7 +208,10 @@ jobs:
             console.log(branchStatus);
             const result = branchStatus.match(/^##\s*([\w\d-_/\\]+)\.\.\.([\w\d-_/\\]+)/)
             if (!result)
-              throw new Exception("Weird");
+            {
+              core.setOutput('pr-needed', 'true');
+              return;
+            }
 
             const currentBranch = result[1];
             const trackingBranch = result[2];
