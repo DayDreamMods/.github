@@ -20,7 +20,7 @@ jobs:
       
       - continue-on-error: true
         run: |
-          git checkout added/changelog-entry -- CHANGELOG.md 
+          git checkout -b added/changelog-entry && git push -u origin added/changelog-entry
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
@@ -194,12 +194,5 @@ jobs:
         run: |
           git add .
           git commit -am "Updated CHANGELOG.md"
-            
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.ORG_PAT }}
-          title: "Update CHANGELOG.md"
-          body: ""
-          branch: added/changelog-entry
-          author: "RedEyeMods <redeyemodding@gmail.com>"
+          git push
+          gh pr create --base ${{ github.event.repository.default_branch }} --head added/changelog-entry --title "Updated CHANGELOG.md" --body "" || echo "PR already exists or another error occurred"
