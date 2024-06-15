@@ -145,7 +145,7 @@ jobs:
                             curString += curElem.toString();
                         }
                     }
-                    return curString;
+                    return curString.trim();
                 }
             }
 
