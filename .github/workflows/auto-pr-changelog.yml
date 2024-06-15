@@ -47,6 +47,8 @@ jobs:
         env:
           HEAD_REF: ${{ github.head_ref }}
           ISSUE_TITLE: ${{ env.PR_TITLE }}
+          ISSUE_NUMBER: ${{ github.event.pull_request.number }}
+          ISSUE_URL: ${{ github.event.pull_request.url }}
         with:
           script: |
             const fs = require('fs');
@@ -185,16 +187,21 @@ jobs:
 
             var category = headRef.split('/')[0];
             var potentialHead = masterHead.changelog.unreleased[category];
-            var potentialEntry = '- ' + process.env.ISSUE_TITLE;
+            var entryPRPrefix = '- [#' + process.env.ISSUE_NUMBER + '](' + process.env.ISSUE_URL + ')';
+            var potentialEntry = entryPRPrefix + ' ' + process.env.ISSUE_TITLE;
             if (labelAdded) {
               if (potentialHead != null) {
                 potentialHead.children.push(potentialEntry);
               }
             } else {
-              const potentialEntryIdx = potentialHead.children.findIndex(item => typeof(item) == typeof('') && item == potentialEntry);
-              if (potentialEntryIdx >= 0) {
-                potentialHead.children.splice(potentialEntryidx, 1)
+              const newChildren = [];
+              for (var curIdx = 0; curIdx < potentialHead.children.length; curIdx++) {
+                const curItem = potentialHead.children[curIdx];
+                if (typeof(curItem) != typeof('') || !item.startsWith(entryPRPrefix)) {
+                  newChildren.push(curItem);
+                }
               }
+              potentialHead.children = newChildren;
             }
             
             fs.writeFileSync(filePath, masterHead.toString());
