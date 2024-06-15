@@ -21,6 +21,7 @@ jobs:
       
       - id: remote-data
         run: |
+          git branch -l added/changelog-entry
           echo 'REMOTE_EXISTS=$(git branch -l added/changelog-entry)' >> '$GITHUB_OUTPUT'
 
       - name: Create Remote Branch
