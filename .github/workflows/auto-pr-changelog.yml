@@ -145,7 +145,7 @@ jobs:
                             curString += curElem.toString();
                         }
                     }
-                    return curString.trim();
+                    return curString;
                 }
             }
 
@@ -204,10 +204,10 @@ jobs:
               potentialHead.children = newChildren;
             }
             
-            fs.writeFileSync(filePath, masterHead.toString());
+            fs.writeFileSync(filePath, masterHead.toString().trim());
 
             console.log("-=-=-=-=-\nWhat we have exported...");
-            console.log(masterHead.toString());
+            console.log(masterHead.toString().trim());
 
       - continue-on-error: true
         env:
