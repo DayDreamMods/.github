@@ -48,7 +48,7 @@ jobs:
           HEAD_REF: ${{ github.head_ref }}
           ISSUE_TITLE: ${{ env.PR_TITLE }}
           ISSUE_NUMBER: ${{ github.event.pull_request.number }}
-          ISSUE_URL: ${{ github.event.pull_request.url }}
+          ISSUE_URL: ${{ github.event.pull_request.html_url }}
         with:
           script: |
             const fs = require('fs');
@@ -197,7 +197,7 @@ jobs:
               const newChildren = [];
               for (var curIdx = 0; curIdx < potentialHead.children.length; curIdx++) {
                 const curItem = potentialHead.children[curIdx];
-                if (typeof(curItem) != typeof('') || !item.startsWith(entryPRPrefix)) {
+                if (typeof(curItem) != typeof('') || !curItem.startsWith(entryPRPrefix)) {
                   newChildren.push(curItem);
                 }
               }
