@@ -21,16 +21,12 @@ jobs:
       
       - id: remote-data
         run: |
-          echo 'REMOTE_EXISTS=$(git branch -a -l origin/added/changelog-entry)' >> '$GITHUB_OUTPUT'
-
-      - name: Create w/ Remote Branch
-        if: ${{ steps.remote-data.outputs.REMOTE_EXISTS == 'remotes/origin/added/changelog-entry'}}
-        run: |
-          git branch --track added/changelog-entry origin/added/changelog-entry
+          echo 'REMOTE_EXISTS=$(git branch -a added/changelog-entry)' >> '$GITHUB_OUTPUT'
 
       - name: Create Remote Branch
         if: ${{ steps.remote-data.outputs.REMOTE_EXISTS != 'remotes/origin/added/changelog-entry'}}
         run: |
+          echo '${{ steps.remote-data.outputs.REMOTE_EXISTS }}'
           git branch added/changelog-entry
           git push -u origin added/changelog-entry
 
