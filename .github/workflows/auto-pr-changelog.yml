@@ -25,7 +25,7 @@ jobs:
           echo 'REMOTE_EXISTS=$(git branch -l origin/added/changelog-entry)' >> '$GITHUB_OUTPUT'
 
       - name: Create Remote Branch
-        if: ${{ steps.remote-data.outputs.REMOTE_EXISTS != 'origin/added/changelog-entry'}}
+        if: ${{ steps.remote-data.outputs.REMOTE_EXISTS != 'remotes/origin/added/changelog-entry'}}
         run: |
           echo '${{ steps.remote-data.outputs.REMOTE_EXISTS }}'
           git branch added/changelog-entry
@@ -33,7 +33,7 @@ jobs:
 
       - continue-on-error: true
         run: |
-          git checkout added/changelog-entry
+          git checkout added/changelog-entry 
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
