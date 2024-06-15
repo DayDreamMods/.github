@@ -11,8 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update mergeable/auto-changelog@RedEyeMods/.github
 - Now implements changelog edits in a new PR
+- Now implements changelog edits in a new PR
 
 ### Removed
 
 - Unused auto-label .mergeable
+
 
