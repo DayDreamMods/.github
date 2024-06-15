@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update mergeable/auto-changelog@RedEyeMods/.github
-- [#184](https://github.com/RedEyeMods/.github/pull/184) Now implements changelog edits in a new PR
 
 ### Removed
 
