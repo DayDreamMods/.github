@@ -191,6 +191,8 @@ jobs:
             console.log(masterHead.toString());
 
       - continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git add .
           git commit -am "Updated CHANGELOG.md"
